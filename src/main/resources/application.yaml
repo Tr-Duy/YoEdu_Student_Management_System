@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: Day1
+  profiles:
+    active: ${APP_PROFILE:dev}
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: never
+
+server:
+  port: 8080
