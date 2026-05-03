@@ -34,11 +34,13 @@ public class ParentServiceImpl implements ParentService {
         existing.setEmail(parent.getEmail());
         existing.setPhone(parent.getPhone());
         existing.setAddress(parent.getAddress());
-        existing.setIsActive(parent.getIsActive());
+        existing.setGender(parent.getGender());
+        existing.setRelationship(parent.getRelationship());
         return parentRepository.save(existing);
     }
 
     public void delete(Long id) {
+
         parentRepository.deleteById(id);
-    }
+}
 }
