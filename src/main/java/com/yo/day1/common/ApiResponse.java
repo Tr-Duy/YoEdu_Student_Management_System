@@ -12,7 +12,7 @@ public record ApiResponse<T>(boolean success, T data, String message, LocalDateT
         return new ApiResponse<>(true, data, "Success", LocalDateTime.now());
     }
 
-    public static ApiResponse<String> successMessage(String message) {
+    public static ApiResponse<Void> successMessage(String message) {
         return new ApiResponse<>(true, null, message, LocalDateTime.now());
     }
 

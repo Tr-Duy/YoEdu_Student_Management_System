@@ -4,10 +4,6 @@ import com.yo.day1.domain.AuditableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.Data;
-import org.springframework.data.domain.Auditable;
-
-import java.io.Serializable;
-import java.time.LocalDate;
 
 @Entity
 @Data
@@ -22,12 +18,9 @@ public class Course extends AuditableEntity {
     @Column(columnDefinition = "text")
     private String courseDescription;
 
-
     private double tuitionFee;
 
     private int totalSession;
 
     private byte isActive;
-
-
 }
