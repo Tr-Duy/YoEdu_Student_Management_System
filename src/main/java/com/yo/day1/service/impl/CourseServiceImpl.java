@@ -1,9 +1,13 @@
 package com.yo.day1.service.impl;
 
+import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.Course;
+import com.yo.day1.dto.course.CourseResponse;
+import com.yo.day1.dto.course.CourseUpsertRequest;
 import com.yo.day1.repository.CourseRepository;
 import com.yo.day1.service.CourseService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,31 +16,43 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
+
     private final CourseRepository courseRepository;
+    private final ModelMapper mapper;
 
-    public List<Course> findAll() {
-        return courseRepository.findAll();
-    }
-    public Optional<Course> findById(Long id) {
-        return courseRepository.findById(id);
-    }
-    public Course save(Course course) {
-        return courseRepository.save(course);
+    @Override
+    public List<CourseResponse> findAll() {
+        return courseRepository.findAll()
+                .stream()
+                .map(c -> mapper.map(c, CourseResponse.class))
+                .toList();
     }
 
-    public Course update(Long id, Course course) {
+    @Override
+    public Optional<CourseResponse> findById(Long id) {
+        return courseRepository.findById(id)
+                .map(c -> mapper.map(c, CourseResponse.class));
+    }
+
+    @Override
+    public CourseResponse save(CourseUpsertRequest req) {
+        Course course = mapper.map(req, Course.class);
+        return mapper.map(courseRepository.save(course), CourseResponse.class);
+    }
+
+    @Override
+    public CourseResponse update(Long id, CourseUpsertRequest req) {
         Course existing = courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found: " + id));
-        existing.setCourseCode(course.getCourseCode());
-        existing.setCourseName(course.getCourseName());
-        existing.setCourseDescription(course.getCourseDescription());
-        existing.setTuitionFee(course.getTuitionFee());
-        existing.setTotalSession(course.getTotalSession());
-        existing.setIsActive(course.getIsActive());
-        return courseRepository.save(existing);
+                .orElseThrow(() -> new NotFoundExeception("Course not found: " + id));
+        mapper.map(req, existing);
+        return mapper.map(courseRepository.save(existing), CourseResponse.class);
     }
 
+    @Override
     public void delete(Long id) {
+        if (!courseRepository.existsById(id)) {
+            throw new NotFoundExeception("Course not found: " + id);
+        }
         courseRepository.deleteById(id);
     }
 }

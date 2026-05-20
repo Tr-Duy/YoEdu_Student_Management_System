@@ -2,12 +2,14 @@ package com.yo.day1.domain.entity;
 
 import com.yo.day1.domain.AuditableEntity;
 import com.yo.day1.domain.enums.TeacherRole;
+import com.yo.day1.domain.enums.TeacherStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -34,6 +36,10 @@ public class Teacher extends AuditableEntity {
     @Column(name = "teacher_role", nullable = false, length = 20)
     private TeacherRole teacherRole;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private TeacherStatus status = TeacherStatus.ACTIVE;
+
     @Column(name = "cccd_image_url", length = 255)
     private String cccdImageUrl;
 
@@ -44,7 +50,7 @@ public class Teacher extends AuditableEntity {
     private LocalDate dateOfBirth;
 
     @Column(precision = 12, scale = 2)
-    private java.math.BigDecimal salary;
+    private BigDecimal salary;
 
     @Column(name = "weekly_slots")
     private Integer weeklySlots;

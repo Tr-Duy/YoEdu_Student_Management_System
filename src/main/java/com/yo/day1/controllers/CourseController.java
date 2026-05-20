@@ -1,41 +1,46 @@
 package com.yo.day1.controllers;
 
 import com.yo.day1.common.ApiResponse;
-import com.yo.day1.domain.entity.Course;
+import com.yo.day1.dto.course.CourseResponse;
+import com.yo.day1.dto.course.CourseUpsertRequest;
 import com.yo.day1.service.CourseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping(value = "/api/course")
+@RequestMapping("/api/course")
 @RequiredArgsConstructor
 public class CourseController {
 
     private final CourseService courseService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Course>>> getCourse() {
+    public ResponseEntity<ApiResponse<List<CourseResponse>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success(courseService.findAll()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Course>> getCourseById(@PathVariable Long id) {
-        return courseService.findById(id)
-                .map(c -> ResponseEntity.ok(ApiResponse.success(c)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ApiResponse<CourseResponse>> getById(@PathVariable Long id) {
+        Optional<CourseResponse> result = courseService.findById(id);
+        if (result.isPresent()) {
+            return ResponseEntity.ok(ApiResponse.success(result.get()));
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Course>> create(@RequestBody Course course) {
-        return ResponseEntity.ok(ApiResponse.success(courseService.save(course)));
+    public ResponseEntity<ApiResponse<CourseResponse>> create(@Valid @RequestBody CourseUpsertRequest req) {
+        return ResponseEntity.ok(ApiResponse.success(courseService.save(req)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Course>> update(@PathVariable Long id, @RequestBody Course course) {
-        return ResponseEntity.ok(ApiResponse.success(courseService.update(id, course)));
+    public ResponseEntity<ApiResponse<CourseResponse>> update(@PathVariable Long id, @Valid @RequestBody CourseUpsertRequest req) {
+        return ResponseEntity.ok(ApiResponse.success(courseService.update(id, req)));
     }
 
     @DeleteMapping("/{id}")

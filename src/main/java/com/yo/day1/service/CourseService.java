@@ -1,14 +1,15 @@
 package com.yo.day1.service;
 
-import com.yo.day1.domain.entity.Course;
+import com.yo.day1.dto.course.CourseResponse;
+import com.yo.day1.dto.course.CourseUpsertRequest;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface CourseService {
-    List<Course> findAll();
-    Optional<Course> findById(Long id);
-    Course save(Course course);
-    Course update(Long id, Course course);
+    List<CourseResponse> findAll();
+    Optional<CourseResponse> findById(Long id);
+    CourseResponse save(CourseUpsertRequest req);
+    CourseResponse update(Long id, CourseUpsertRequest req);
     void delete(Long id);
 }

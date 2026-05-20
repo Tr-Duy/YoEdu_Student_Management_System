@@ -1,9 +1,13 @@
 package com.yo.day1.service.impl;
 
+import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.Teacher;
+import com.yo.day1.dto.teacher.TeacherResponse;
+import com.yo.day1.dto.teacher.TeacherUpsertRequest;
 import com.yo.day1.repository.TeacherRepository;
 import com.yo.day1.service.TeacherService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,40 +18,43 @@ import java.util.Optional;
 public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository teacherRepository;
+    private final ModelMapper mapper;
 
-    public List<Teacher> findAll() {
-        return teacherRepository.findAll();
+    @Override
+    public List<TeacherResponse> findAll(Boolean active) {
+        List<Teacher> teachers = (active != null)
+                ? teacherRepository.findByIsActive(active)
+                : teacherRepository.findAll();
+        return teachers.stream()
+                .map(t -> mapper.map(t, TeacherResponse.class))
+                .toList();
     }
 
-    public Optional<Teacher> findById(Long id) {
-        return teacherRepository.findById(id);
+    @Override
+    public Optional<TeacherResponse> findById(Long id) {
+        return teacherRepository.findById(id)
+                .map(t -> mapper.map(t, TeacherResponse.class));
     }
 
-    public Teacher save(Teacher teacher) {
-        return teacherRepository.save(teacher);
+    @Override
+    public TeacherResponse save(TeacherUpsertRequest req) {
+        Teacher teacher = mapper.map(req, Teacher.class);
+        return mapper.map(teacherRepository.save(teacher), TeacherResponse.class);
     }
 
-    public Teacher update(Long id, Teacher teacher) {
+    @Override
+    public TeacherResponse update(Long id, TeacherUpsertRequest req) {
         Teacher existing = teacherRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Teacher not found: " + id));
-        existing.setTeacherCode(teacher.getTeacherCode());
-        existing.setFullName(teacher.getFullName());
-        existing.setEmail(teacher.getEmail());
-        existing.setPhone(teacher.getPhone());
-        existing.setTeacherRole(teacher.getTeacherRole());
-        existing.setDateOfBirth(teacher.getDateOfBirth());
-        existing.setSalary(teacher.getSalary());
-        existing.setWeeklySlots(teacher.getWeeklySlots());
-        existing.setAddress(teacher.getAddress());
-        existing.setDescription(teacher.getDescription());
-        existing.setWorkUnit(teacher.getWorkUnit());
-        existing.setExperience(teacher.getExperience());
-        existing.setAchievement(teacher.getAchievement());
-        existing.setIsActive(teacher.getIsActive());
-        return teacherRepository.save(existing);
+                .orElseThrow(() -> new NotFoundExeception("Teacher not found: " + id));
+        mapper.map(req, existing);
+        return mapper.map(teacherRepository.save(existing), TeacherResponse.class);
     }
 
+    @Override
     public void delete(Long id) {
+        if (!teacherRepository.existsById(id)) {
+            throw new NotFoundExeception("Teacher not found: " + id);
+        }
         teacherRepository.deleteById(id);
     }
 }
