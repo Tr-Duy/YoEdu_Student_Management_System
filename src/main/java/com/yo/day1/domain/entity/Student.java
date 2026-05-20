@@ -5,12 +5,14 @@ import com.yo.day1.domain.enums.Gender;
 import com.yo.day1.domain.enums.StudentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Table(name = "students")
 public class Student extends AuditableEntity {
 
@@ -52,6 +54,4 @@ public class Student extends AuditableEntity {
 
     @Column(length = 255)
     private String note;
-
-
 }

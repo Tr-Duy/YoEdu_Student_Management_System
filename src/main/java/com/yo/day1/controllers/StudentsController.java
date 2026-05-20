@@ -1,8 +1,9 @@
 package com.yo.day1.controllers;
 
 import com.yo.day1.common.ApiResponse;
-import com.yo.day1.dto.StudentResponse;
-import com.yo.day1.dto.StudentUpsertRequest;
+import com.yo.day1.domain.enums.StudentStatus;
+import com.yo.day1.dto.student.StudentResponse;
+import com.yo.day1.dto.student.StudentUpsertRequest;
 import com.yo.day1.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,18 @@ public class StudentsController {
     public ResponseEntity<ApiResponse<StudentResponse>> update(@PathVariable Long id, @RequestBody StudentUpsertRequest req) {
         return ResponseEntity.ok(ApiResponse.success(studentService.update(id, req)));
     }
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<StudentResponse>> findByStudentCode(@RequestParam String studentCode) {
+        return studentService.findByStudentCode(studentCode)
+                .map(s -> ResponseEntity.ok(ApiResponse.success(s)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<ApiResponse<List<StudentResponse>>> findByStatus(@PathVariable StudentStatus status) {
+        return ResponseEntity.ok(ApiResponse.success(studentService.findByStatus(status)));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         studentService.deleteById(id);

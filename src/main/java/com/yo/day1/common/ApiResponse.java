@@ -1,5 +1,5 @@
 package com.yo.day1.common;
-
+// File này định nghĩa chuẩn format response trả về cho client — mọi API trong project đều trả về cùng một cấu trúc.
 import java.time.LocalDateTime;
 
 public record ApiResponse<T>(boolean success, T data, String message, LocalDateTime timestamp) {

@@ -2,8 +2,9 @@ package com.yo.day1.service.impl;
 
 import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.Student;
-import com.yo.day1.dto.StudentResponse;
-import com.yo.day1.dto.StudentUpsertRequest;
+import com.yo.day1.domain.enums.StudentStatus;
+import com.yo.day1.dto.student.StudentResponse;
+import com.yo.day1.dto.student.StudentUpsertRequest;
 import com.yo.day1.repository.ParentRepository;
 import com.yo.day1.repository.StudentRepository;
 import com.yo.day1.service.StudentService;
@@ -52,6 +53,20 @@ public class StudentServiceImpl implements StudentService {
         parentRepository.findById(req.getParentId())
                 .ifPresent(stu::setParent);
         return mapper.map(studentRepository.save(stu), StudentResponse.class);
+    }
+
+    @Override
+    public Optional<StudentResponse> findByStudentCode(String studentCode) {
+        return studentRepository.findByStudentCode(studentCode)
+                .map(s -> mapper.map(s, StudentResponse.class));
+    }
+
+    @Override
+    public List<StudentResponse> findByStatus(StudentStatus status) {
+        return studentRepository.findByStatus(status)
+                .stream()
+                .map(s -> mapper.map(s, StudentResponse.class))
+                .toList();
     }
 
     @Override

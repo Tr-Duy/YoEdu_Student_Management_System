@@ -30,10 +30,19 @@ public class TeacherServiceImpl implements TeacherService {
     public Teacher update(Long id, Teacher teacher) {
         Teacher existing = teacherRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Teacher not found: " + id));
+        existing.setTeacherCode(teacher.getTeacherCode());
         existing.setFullName(teacher.getFullName());
         existing.setEmail(teacher.getEmail());
         existing.setPhone(teacher.getPhone());
-        existing.setSpecialization(teacher.getSpecialization());
+        existing.setTeacherRole(teacher.getTeacherRole());
+        existing.setDateOfBirth(teacher.getDateOfBirth());
+        existing.setSalary(teacher.getSalary());
+        existing.setWeeklySlots(teacher.getWeeklySlots());
+        existing.setAddress(teacher.getAddress());
+        existing.setDescription(teacher.getDescription());
+        existing.setWorkUnit(teacher.getWorkUnit());
+        existing.setExperience(teacher.getExperience());
+        existing.setAchievement(teacher.getAchievement());
         existing.setIsActive(teacher.getIsActive());
         return teacherRepository.save(existing);
     }

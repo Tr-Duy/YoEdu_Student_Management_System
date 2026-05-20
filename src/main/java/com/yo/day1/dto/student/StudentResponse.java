@@ -1,7 +1,8 @@
 package com.yo.day1.dto.student;
-
+//Đây là DTO (Data Transfer Object) — định nghĩa data trả về cho client khi query thông tin Student.
 import com.yo.day1.domain.enums.Gender;
 import com.yo.day1.domain.enums.StudentStatus;
+import com.yo.day1.dto.parent.ParentResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +22,7 @@ public class StudentResponse {
     private LocalDate dateOfBirth;
 
 
-    private Gender gender = Gender.OTHER;
+    private Gender gender = Gender.OTHER; // giới tính, mặc định OTHER
 
     private String gradeLevel;
 
@@ -32,11 +33,11 @@ public class StudentResponse {
     private String description;
 
 
-    private Long parentId;
+    private ParentResponse parent;
 
-    private StudentStatus status = StudentStatus.ACTIVE;
+    private StudentStatus status = StudentStatus.ACTIVE; // trạng thái, mặc định ACTIVE
 
-    private BigDecimal latestScore = BigDecimal.ZERO;
+    private BigDecimal latestScore = BigDecimal.ZERO;// điểm mới nhất, mặc định 0
 
     private String note;
 
