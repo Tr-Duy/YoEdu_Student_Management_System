@@ -2,10 +2,7 @@ package com.yo.day1.domain.entity;
 
 import com.yo.day1.domain.AuditableEntity;
 import com.yo.day1.domain.enums.Gender;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -31,7 +28,5 @@ public class Parent extends AuditableEntity {
     private Gender gender = Gender.OTHER;
 
     @Column(length = 50)
-    private String Relationship;
-
-
+    private String relationship;
 }

@@ -2,6 +2,7 @@ package com.yo.day1.controllers;
 
 import com.yo.day1.common.ApiResponse;
 import com.yo.day1.dto.auth.AuthResponse;
+import com.yo.day1.dto.auth.ChangePasswordRequest;
 import com.yo.day1.dto.auth.CurrentUserResponse;
 import com.yo.day1.dto.auth.LoginRequest;
 import com.yo.day1.dto.auth.RequestTokenRequest;
@@ -26,6 +27,13 @@ public class AuthController {
     @PostMapping("/refresh")
     public ApiResponse<AuthResponse> refresh(@Valid @RequestBody RequestTokenRequest request) {
         return ApiResponse.success(authService.refresh(request), "Token refreshed");
+    }
+
+    @PostMapping("/change-password")
+    public ApiResponse<Void> changePassword(Authentication authentication,
+                                            @Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(authentication.getName(), request);
+        return ApiResponse.successMessage("Password changed successfully");
     }
 
     @GetMapping("/me")

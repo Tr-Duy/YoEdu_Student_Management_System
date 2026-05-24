@@ -10,7 +10,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "refresh_token_session")
+@Table(name = "refresh_token_sessions")
 public class RefreshTokenSession extends AuditableEntity {
 
     @Column(nullable = false, unique = true, length = 100)
@@ -29,12 +29,12 @@ public class RefreshTokenSession extends AuditableEntity {
     @Column(name = "replaced_by_jti", length = 100)
     private String replacedByJti;
 
+    @Column(name = "is_revoked", nullable = false)
+    private Boolean isRevoked = false;
+
     @Column(name = "ip_address", length = 50)
     private String ipAddress;
 
     @Column(name = "user_agent", length = 255)
     private String userAgent;
-
-    @Column(name = "is_revoked", nullable = false)
-    private Boolean isRevoked = false;
 }

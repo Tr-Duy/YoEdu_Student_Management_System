@@ -7,6 +7,7 @@ import com.yo.day1.domain.entity.Users;
 import com.yo.day1.dto.auth.AuthResponse;
 import com.yo.day1.dto.auth.CurrentUserResponse;
 import com.yo.day1.dto.auth.LoginRequest;
+import com.yo.day1.dto.auth.ChangePasswordRequest;
 import com.yo.day1.dto.auth.RequestTokenRequest;
 import com.yo.day1.repository.RefreshTokenSessionRepository;
 import com.yo.day1.repository.UserRepository;
@@ -136,6 +137,19 @@ public class AuthServiceImpl implements AuthService {
                 newRefreshExpiry,
                 buildCurrentUser(session.getUser())
         );
+    }
+
+    @Override
+    public void changePassword(String username, ChangePasswordRequest request) {
+        Users user = findActiveUserByUsername(username);
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new BadCredentialsException("Current password is incorrect");
+        }
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new BadRequestException("New password and confirm password do not match");
+        }
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
     }
 
     private CurrentUserResponse buildCurrentUser(Users user) {
