@@ -78,4 +78,20 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
+    @Override
+    public Student getStudent(Long id) {
+        return studentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundExeception("Student not found: " + id));
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Override
+    public Student getStudentForParent(Long studentId, Long parentId) {
+        Student student = getStudent(studentId);
+        if (student.getParent() == null || !student.getParent().getId().equals(parentId)) {
+            throw new org.springframework.security.access.AccessDeniedException("Student does not belong to current parent account");
+        }
+        return student;
+    }
+
 }

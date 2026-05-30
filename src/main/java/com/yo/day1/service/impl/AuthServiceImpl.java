@@ -55,8 +55,8 @@ public class AuthServiceImpl implements AuthService {
             throw new BadCredentialsException("Invalid credentials");
         }
 
-        String accessToken = jwtService.generateAccessToken(user.getUsername());
-        String refreshToken = jwtService.generateRefreshToken(user.getUsername());
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
         String refreshJti = jwtService.extractJti(refreshToken);
         Instant refreshExpiry = jwtService.extractExpiration(refreshToken);
 
@@ -110,9 +110,9 @@ public class AuthServiceImpl implements AuthService {
         session.setRevokedAt(Instant.now());
 
         // tạo token mới
-        String username = jwtService.extractUsername(refreshToken);
-        String newAccessToken = jwtService.generateAccessToken(username);
-        String newRefreshToken = jwtService.generateRefreshToken(username);
+        Users refreshUser = session.getUser();
+        String newAccessToken = jwtService.generateAccessToken(refreshUser);
+        String newRefreshToken = jwtService.generateRefreshToken(refreshUser);
         String newJti = jwtService.extractJti(newRefreshToken);
         Instant newRefreshExpiry = jwtService.extractExpiration(newRefreshToken);
 

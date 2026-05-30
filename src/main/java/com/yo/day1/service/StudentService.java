@@ -1,5 +1,6 @@
 package com.yo.day1.service;
 
+import com.yo.day1.domain.entity.Student;
 import com.yo.day1.domain.enums.StudentStatus;
 import com.yo.day1.dto.student.StudentResponse;
 import com.yo.day1.dto.student.StudentUpsertRequest;
@@ -12,8 +13,9 @@ public interface StudentService {
     Optional<StudentResponse> findById(long id);
     StudentResponse create(StudentUpsertRequest req);
     StudentResponse update(Long id, StudentUpsertRequest req);
-
     Optional<StudentResponse> findByStudentCode(String studentCode);
     List<StudentResponse> findByStatus(StudentStatus status);
     void deleteById(Long id);
+    Student getStudent(Long id);
+    Student getStudentForParent(Long studentId, Long parentId);
 }
