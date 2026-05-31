@@ -1,15 +1,16 @@
 package com.yo.day1.service.impl;
 
 import com.yo.day1.common.exception.BadRequestException;
+import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.*;
 import com.yo.day1.domain.enums.AttendanceStatus;
+import com.yo.day1.domain.enums.EnrollmentStatus;
 import com.yo.day1.domain.enums.NotificationRecipientType;
 import com.yo.day1.domain.enums.NotificationType;
+import com.yo.day1.domain.enums.StudentStatus;
 import com.yo.day1.dto.attendance.*;
-import com.yo.day1.repository.AttendanceRepository;
-import com.yo.day1.repository.CourseClassRepository;
-import com.yo.day1.repository.NotificationRepository;
-import com.yo.day1.repository.StudentRepository;
+import com.yo.day1.dto.student.StudentResponse;
+import com.yo.day1.repository.*;
 import com.yo.day1.service.AttendanceService;
 import com.yo.day1.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +32,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final NotificationRepository notificationRepository;
     private final StudentRepository studentRepository;
     private final CourseClassRepository courseClassRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final AuthService authService;
     private final ModelMapper mapper;
 
@@ -38,9 +40,23 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     public AttendanceResponse create(AttendanceCreateRequest request, String username) {
         CourseClass courseClass = courseClassRepository.findById(request.getCourseClassId())
-                .orElseThrow(() -> new com.yo.day1.common.exception.NotFoundExeception("Course class not found: " + request.getCourseClassId()));
+                .orElseThrow(() -> new NotFoundExeception("Course class not found: " + request.getCourseClassId()));
         Student student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(() -> new com.yo.day1.common.exception.NotFoundExeception("Student not found: " + request.getStudentId()));
+                .orElseThrow(() -> new NotFoundExeception("Student not found: " + request.getStudentId()));
+
+        // Rule: không điểm danh học viên đã hủy học hoặc tạm ngưng
+        if (student.getStatus() == StudentStatus.DROPPED) {
+            throw new BadRequestException("Không thể điểm danh học viên đã hủy học");
+        }
+        if (student.getStatus() == StudentStatus.PAUSE) {
+            throw new BadRequestException("Không thể điểm danh học viên đang tạm ngưng");
+        }
+
+        // Rule: học viên phải có enrollment ACTIVE trong lớp này
+        if (!enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(
+                request.getStudentId(), request.getCourseClassId(), EnrollmentStatus.ACTIVE)) {
+            throw new BadRequestException("Học viên không có trong danh sách lớp học này");
+        }
 
         validateAttendanceDate(courseClass, request.getAttendanceDate());
 
@@ -125,6 +141,15 @@ public class AttendanceServiceImpl implements AttendanceService {
             map.get(sid).getAttendanceByDate().put(a.getAttendanceDate().toString(), a.getStatus().name());
         }
         return List.copyOf(map.values());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<StudentResponse> getEligibleStudents(Long classId) {
+        return attendanceRepository.findEligibleStudentsForAttendance(classId)
+                .stream()
+                .map(s -> mapper.map(s, StudentResponse.class))
+                .toList();
     }
 
     private void validateAttendanceDate(CourseClass courseClass, LocalDate attendanceDate) {

@@ -1,4 +1,4 @@
-package com.yo.day1.dto.invoice;
+package com.yo.day1.dto.Billing;
 
 import lombok.Data;
 

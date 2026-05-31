@@ -4,10 +4,14 @@ import com.yo.day1.common.exception.BadRequestException;
 import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.RefreshTokenSession;
 import com.yo.day1.domain.entity.Users;
+import com.yo.day1.dto.auth.AssignRoleRequest;
 import com.yo.day1.dto.auth.AuthResponse;
 import com.yo.day1.dto.auth.CurrentUserResponse;
 import com.yo.day1.dto.auth.LoginRequest;
 import com.yo.day1.dto.auth.ChangePasswordRequest;
+import com.yo.day1.dto.auth.CreateUserRequest;
+import com.yo.day1.repository.ParentRepository;
+import com.yo.day1.repository.TeacherRepository;
 import com.yo.day1.dto.auth.RequestTokenRequest;
 import com.yo.day1.repository.RefreshTokenSessionRepository;
 import com.yo.day1.repository.UserRepository;
@@ -21,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +36,8 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final HttpServletRequest httpRequest;
+    private final ParentRepository parentRepository;
+    private final TeacherRepository teacherRepository;
 
     @Override
     public CurrentUserResponse getCurrentUser(String username) {
@@ -137,6 +144,83 @@ public class AuthServiceImpl implements AuthService {
                 newRefreshExpiry,
                 buildCurrentUser(session.getUser())
         );
+    }
+
+    @Override
+    public CurrentUserResponse createUser(CreateUserRequest request) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new com.yo.day1.common.exception.ConflictException("Username already exists: " + request.getUsername());
+        }
+        Users user = new Users();
+        user.setUsername(request.getUsername());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setFullName(request.getFullName());
+        user.setRole(request.getRole());
+        user.setIsActive(true);
+        if (request.getParentId() != null) {
+            user.setParent(parentRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new NotFoundExeception("Parent not found: " + request.getParentId())));
+        }
+        if (request.getTeacherId() != null) {
+            user.setTeacher(teacherRepository.findById(request.getTeacherId())
+                    .orElseThrow(() -> new NotFoundExeception("Teacher not found: " + request.getTeacherId())));
+        }
+        return buildCurrentUser(userRepository.save(user));
+    }
+
+    @Override
+    public void resetPasswordForParent(Long parentUserId, String newPassword) {
+        Users user = userRepository.findById(parentUserId)
+                .orElseThrow(() -> new NotFoundExeception("User not found: " + parentUserId));
+        if (user.getRole() != com.yo.day1.domain.enums.UserRole.PARENT) {
+            throw new BadRequestException("Only PARENT accounts can be reset via this endpoint");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Override
+    public List<CurrentUserResponse> listUsers() {
+        return userRepository.findAll().stream().map(this::buildCurrentUser).toList();
+    }
+
+    @Override
+    public CurrentUserResponse getUserById(Long id) {
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundExeception("User not found: " + id));
+        return buildCurrentUser(user);
+    }
+
+    @Override
+    @Transactional
+    public CurrentUserResponse assignRole(Long id, AssignRoleRequest request) {
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundExeception("User not found: " + id));
+        user.setRole(request.getRole());
+        return buildCurrentUser(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public CurrentUserResponse toggleActive(Long id) {
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundExeception("User not found: " + id));
+        user.setIsActive(!Boolean.TRUE.equals(user.getIsActive()));
+        return buildCurrentUser(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public void logout(String refreshToken) {
+        if (!jwtService.validateToken(refreshToken) || jwtService.isAccessToken(refreshToken)) {
+            throw new BadCredentialsException("Invalid refresh token");
+        }
+        String jti = jwtService.extractJti(refreshToken);
+        refreshTokenSessionRepository.findByJtiAndIsRevokedFalse(jti).ifPresent(session -> {
+            session.setIsRevoked(true);
+            session.setRevokedAt(Instant.now());
+            refreshTokenSessionRepository.save(session);
+        });
     }
 
     @Override

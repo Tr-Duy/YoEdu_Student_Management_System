@@ -3,6 +3,7 @@ package com.yo.day1.controllers;
 import com.yo.day1.common.ApiResponse;
 import com.yo.day1.dto.learning.LearningResultCreateRequest;
 import com.yo.day1.dto.learning.LearningResultResponse;
+import com.yo.day1.dto.learning.LearningResultUpdateRequest;
 import com.yo.day1.service.LearningResultService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,26 @@ public class LearningResultController {
         return ApiResponse.success(learningResultService.create(request, principal.getName()), "Learning result created");
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF')")
+    public ApiResponse<LearningResultResponse> update(@PathVariable Long id,
+                                                      @Valid @RequestBody LearningResultUpdateRequest request,
+                                                      Principal principal) {
+        return ApiResponse.success(learningResultService.update(id, request, principal.getName()), "Updated");
+    }
+
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF','PARENT')")
     public ApiResponse<List<LearningResultResponse>> findByStudentId(@PathVariable Long studentId, Principal principal) {
         return ApiResponse.success(learningResultService.findByStudentId(studentId, principal.getName()));
+    }
+
+    @GetMapping("/class/{classId}")
+    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF')")
+    public ApiResponse<List<LearningResultResponse>> findByClassAndMonth(
+            @PathVariable Long classId,
+            @RequestParam int year,
+            @RequestParam int month) {
+        return ApiResponse.success(learningResultService.findByClassAndMonth(classId, year, month));
     }
 }

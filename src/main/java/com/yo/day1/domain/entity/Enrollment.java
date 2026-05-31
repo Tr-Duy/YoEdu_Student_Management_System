@@ -22,10 +22,13 @@ public class Enrollment extends AuditableEntity {
     @JoinColumn(name = "course_class_id", nullable = false)
     private CourseClass courseClass;
 
+    @Column(name = "enrolled_at", nullable = false)
+    private LocalDate enrolledAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EnrollmentStatus status = EnrollmentStatus.ACTIVE;
 
-    @Column(name = "enrolled_date")
-    private LocalDate enrolledDate;
+    @Column(length = 255)
+    private String note;
 }

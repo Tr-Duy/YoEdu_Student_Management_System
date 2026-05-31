@@ -1,4 +1,4 @@
-package com.yo.day1.dto.invoice;
+package com.yo.day1.dto.Billing;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;

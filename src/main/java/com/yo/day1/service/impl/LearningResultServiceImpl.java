@@ -7,6 +7,7 @@ import com.yo.day1.domain.entity.LearningResult;
 import com.yo.day1.domain.entity.Users;
 import com.yo.day1.dto.learning.LearningResultCreateRequest;
 import com.yo.day1.dto.learning.LearningResultResponse;
+import com.yo.day1.dto.learning.LearningResultUpdateRequest;
 import com.yo.day1.repository.LearningResultRepository;
 import com.yo.day1.service.AuthService;
 import com.yo.day1.service.CourseClassService;
@@ -53,6 +54,24 @@ public class LearningResultServiceImpl implements LearningResultService {
             }
             throw ex;
         }
+    }
+
+    @Transactional
+    @Override
+    public LearningResultResponse update(Long id, LearningResultUpdateRequest request, String username) {
+        LearningResult item = learningResultRepository.findById(id)
+                .orElseThrow(() -> new NotFoundExeception("Learning result not found: " + id));
+        if (request.getScore() != null) item.setScore(request.getScore());
+        if (request.getTeacherComment() != null) item.setTeacherComment(request.getTeacherComment());
+        item.setCreatedByUser(authService.findActiveUserByUsername(username));
+        return toResponse(learningResultRepository.save(item));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<LearningResultResponse> findByClassAndMonth(Long courseClassId, int year, int month) {
+        return learningResultRepository.findByClassAndMonth(courseClassId, year, month)
+                .stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)

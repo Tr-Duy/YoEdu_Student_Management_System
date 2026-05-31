@@ -2,6 +2,8 @@ package com.yo.day1.service.impl;
 
 import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.CourseClass;
+import com.yo.day1.domain.enums.ClassStatus;
+import com.yo.day1.domain.spec.CourseClassSpec;
 import com.yo.day1.dto.courseclass.CourseClassCreateRequest;
 import com.yo.day1.dto.courseclass.CourseClassResponse;
 import com.yo.day1.repository.*;
@@ -26,6 +28,13 @@ public class CourseClassServiceImpl implements CourseClassService {
 
     @Transactional(readOnly = true)
     @Override
+    public Page<CourseClassResponse> search(String search, ClassStatus status, Long courseId, Long teacherId, Pageable pageable) {
+        return courseClassRepository.findAll(CourseClassSpec.filter(search, status, courseId, teacherId), pageable)
+                .map(this::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public Page<CourseClassResponse> findAll(String search, Pageable pageable) {
         if (search != null && !search.isBlank()) {
             return courseClassRepository
@@ -39,6 +48,12 @@ public class CourseClassServiceImpl implements CourseClassService {
     @Override
     public List<CourseClassResponse> findByCourseId(Long courseId) {
         return courseClassRepository.findByCourseId(courseId).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<CourseClassResponse> findByStudentId(Long studentId) {
+        return courseClassRepository.findActiveClassesByStudentId(studentId).stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)

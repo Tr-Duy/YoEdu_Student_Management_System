@@ -5,6 +5,7 @@ import com.yo.day1.dto.attendance.AttendanceBatchRequest;
 import com.yo.day1.dto.attendance.AttendanceCreateRequest;
 import com.yo.day1.dto.attendance.AttendanceResponse;
 import com.yo.day1.dto.attendance.StudentAttendanceRowDto;
+import com.yo.day1.dto.student.StudentResponse;
 import com.yo.day1.service.AttendanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,5 +45,12 @@ public class AttendanceController {
     public ApiResponse<List<StudentAttendanceRowDto>> getMatrix(@PathVariable Long classId,
             @RequestParam int year, @RequestParam int month) {
         return ApiResponse.success(attendanceService.getAttendanceMatrix(classId, year, month));
+    }
+
+    /** Danh sách học viên hợp lệ để điểm danh: enrollment ACTIVE + student ACTIVE */
+    @GetMapping("/eligible-students/{classId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF')")
+    public ApiResponse<List<StudentResponse>> getEligibleStudents(@PathVariable Long classId) {
+        return ApiResponse.success(attendanceService.getEligibleStudents(classId));
     }
 }
