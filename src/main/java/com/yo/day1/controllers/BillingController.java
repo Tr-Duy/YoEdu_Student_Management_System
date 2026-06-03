@@ -49,7 +49,7 @@ public class BillingController {
         return ApiResponse.success(billingService.findInvoicesByStudent(studentId, principal.getName()));
     }
 
-    @PostMapping("/invoices/payment")
+    @PostMapping({"/invoices/payment", "/payments"})
     @PreAuthorize("hasAnyRole('ADMIN','CASHIER')")
     @Operation(summary = "Record a payment for an invoice (cash or bank transfer)")
     public ApiResponse<PaymentResponse> recordPayment(

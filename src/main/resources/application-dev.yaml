@@ -5,9 +5,11 @@ spring:
     username: ${YOEDU_DB_USER:root}
     password: ${YOEDU_DB_PASSWORD:123456}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: false
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:

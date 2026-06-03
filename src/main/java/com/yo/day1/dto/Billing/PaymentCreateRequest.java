@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 public class PaymentCreateRequest {
     @NotNull
     private Long invoiceId;
-    @NotBlank
     private String paymentCode;
     @NotNull @DecimalMin("0.01")
     private BigDecimal paidAmount;

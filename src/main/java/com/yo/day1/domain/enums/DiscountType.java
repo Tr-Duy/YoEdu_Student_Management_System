@@ -2,5 +2,5 @@ package com.yo.day1.domain.enums;
 
 public enum DiscountType {
     PERCENT,
-    FIXED_AMOUNT
+    AMOUNT
 }

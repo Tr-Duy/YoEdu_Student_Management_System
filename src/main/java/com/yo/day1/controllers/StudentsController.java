@@ -8,6 +8,7 @@ import com.yo.day1.dto.student.StudentStatusHistoryResponse;
 import com.yo.day1.dto.student.StudentUpsertRequest;
 import com.yo.day1.service.AuthService;
 import com.yo.day1.service.StudentService;
+import com.yo.day1.dto.student.StudentWithParentUpsertRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,10 +60,22 @@ public class StudentsController {
         return ResponseEntity.ok(ApiResponse.success(studentService.create(req)));
     }
 
+    @PostMapping("/with-parent")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF')")
+    public ResponseEntity<ApiResponse<StudentResponse>> createWithParent(@Valid @RequestBody StudentWithParentUpsertRequest req) {
+        return ResponseEntity.ok(ApiResponse.success(studentService.createWithParent(req)));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<StudentResponse>> update(@PathVariable Long id, @Valid @RequestBody StudentUpsertRequest req) {
         return ResponseEntity.ok(ApiResponse.success(studentService.update(id, req)));
+    }
+
+    @PutMapping("/{id}/with-parent")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF')")
+    public ResponseEntity<ApiResponse<StudentResponse>> updateWithParent(@PathVariable Long id, @Valid @RequestBody StudentWithParentUpsertRequest req) {
+        return ResponseEntity.ok(ApiResponse.success(studentService.updateWithParent(id, req)));
     }
 
     @GetMapping("/search")

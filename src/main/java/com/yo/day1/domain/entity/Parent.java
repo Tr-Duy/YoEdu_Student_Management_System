@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
+@Table(name = "parents")
 public class Parent extends AuditableEntity {
 
     @Column(columnDefinition = "varchar(100)")

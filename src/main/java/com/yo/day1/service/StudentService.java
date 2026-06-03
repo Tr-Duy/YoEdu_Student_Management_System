@@ -6,6 +6,7 @@ import com.yo.day1.dto.student.StudentResponse;
 import com.yo.day1.dto.student.StudentUpsertRequest;
 import com.yo.day1.dto.student.ChangeStudentStatusRequest;
 import com.yo.day1.dto.student.StudentStatusHistoryResponse;
+import com.yo.day1.dto.student.StudentWithParentUpsertRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,6 +19,8 @@ public interface StudentService {
     Optional<StudentResponse> findById(long id);
     StudentResponse create(StudentUpsertRequest req);
     StudentResponse update(Long id, StudentUpsertRequest req);
+    StudentResponse createWithParent(StudentWithParentUpsertRequest req);
+    StudentResponse updateWithParent(Long id, StudentWithParentUpsertRequest req);
     Optional<StudentResponse> findByStudentCode(String studentCode);
     List<StudentResponse> findByStatus(StudentStatus status);
     void deleteById(Long id);
@@ -26,4 +29,5 @@ public interface StudentService {
     List<StudentResponse> searchByName(String name);
     StudentResponse changeStatus(Long id, ChangeStudentStatusRequest request, Long changedByUserId);
     List<StudentStatusHistoryResponse> getStatusHistory(Long studentId);
+    List<StudentResponse> findByParentId(Long parentId);
 }

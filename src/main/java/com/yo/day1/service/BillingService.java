@@ -12,5 +12,7 @@ public interface BillingService {
     List<InvoiceResponse> findInvoicesByStudent(Long studentId, String username) throws BadRequestException, NotFoundExeception;
     PaymentResponse recordPayment(PaymentCreateRequest request, String receivedBy);
     List<PaymentResponse> getPaymentHistory(Long studentId, String username) throws BadRequestException, NotFoundExeception;
+    List<PaymentResponse> getAllPayments(Long studentId, String username);
+    PaymentResponse getPaymentById(Long id, String username);
     List<OverdueWarningResponse> getOverdueWarnings();
 }

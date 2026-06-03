@@ -48,7 +48,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (student.getStatus() == StudentStatus.DROPPED) {
             throw new BadRequestException("Không thể điểm danh học viên đã hủy học");
         }
-        if (student.getStatus() == StudentStatus.PAUSE) {
+        if (student.getStatus() == StudentStatus.PAUSED) {
             throw new BadRequestException("Không thể điểm danh học viên đang tạm ngưng");
         }
 

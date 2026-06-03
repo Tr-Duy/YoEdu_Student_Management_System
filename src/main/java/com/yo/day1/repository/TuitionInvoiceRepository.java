@@ -17,8 +17,13 @@ public interface TuitionInvoiceRepository extends JpaRepository<TuitionInvoice, 
 
     boolean existsByStudentIdAndCourseClassIdAndBillingMonth(Long studentId, Long courseClassId, LocalDate billingMonth);
 
+    boolean existsByInvoiceCode(String invoiceCode);
+
     @Query("SELECT i FROM TuitionInvoice i WHERE i.status <> 'PAID' AND i.dueDate < :cutoff ORDER BY i.dueDate ASC")
     List<TuitionInvoice> findOverdue(@Param("cutoff") LocalDate cutoff);
+
+    @Query("SELECT COUNT(i) FROM TuitionInvoice i WHERE i.status <> 'PAID'")
+    long countUnpaidInvoices();
 
     // Báo cáo doanh thu theo tháng
     @Query("""

@@ -11,7 +11,6 @@ import java.time.LocalDate;
 @Data
 public class InvoiceCreateRequest {
 
-    @NotNull
     String invoiceCode;
 
     @NotNull

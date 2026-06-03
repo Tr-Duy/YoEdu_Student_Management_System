@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
-@Table(name = "room")
+@Table(name = "rooms")
 public class Room extends AuditableEntity {
 
     @Column(length = 20)

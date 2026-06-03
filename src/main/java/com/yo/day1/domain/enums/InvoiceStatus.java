@@ -2,6 +2,7 @@ package com.yo.day1.domain.enums;
 
 public enum InvoiceStatus {
     UNPAID,
-    PARTIALLY_PAID,
-    PAID
+    PARTIAL,
+    PAID,
+    OVERPAID
 }

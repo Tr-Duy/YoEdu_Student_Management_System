@@ -20,6 +20,9 @@ import java.time.LocalDate;
 @SQLRestriction("deleted = false")
 public class Teacher extends AuditableEntity {
 
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted = false;
+
     @Column(name = "teacher_code", nullable = false, unique = true, length = 20)
     private String teacherCode;
 

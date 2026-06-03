@@ -11,6 +11,9 @@ public class PaymentResponse {
     private Long invoiceId;
     private String invoiceCode;
     private String paymentCode;
+    private Long studentId;
+    private String studentName;
+    private String studentCode;
     private BigDecimal paidAmount;
     private String paymentMethod;
     private LocalDateTime paidAt;
