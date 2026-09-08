@@ -1,1 +1,0 @@
--- Blank migration: aligned Java enum DiscountType with database's ENUM('PERCENT', 'AMOUNT') instead of altering column or values.
