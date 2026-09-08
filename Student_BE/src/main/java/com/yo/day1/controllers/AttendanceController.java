@@ -34,10 +34,19 @@ public class AttendanceController {
         return ApiResponse.success(attendanceService.saveBatch(request, principal.getName()), "Attendance saved");
     }
 
+    @GetMapping("/classes-by-date")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF')")
+    public ApiResponse<List<com.yo.day1.dto.attendance.ClassAttendanceDailyDto>> getClassesByDate(
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate date) {
+        return ApiResponse.success(attendanceService.getClassesByDate(date));
+    }
+
     @GetMapping("/class/{classId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF')")
-    public ApiResponse<List<AttendanceResponse>> findByClassId(@PathVariable Long classId) {
-        return ApiResponse.success(attendanceService.findByClassId(classId));
+    public ApiResponse<List<AttendanceResponse>> findByClassId(
+            @PathVariable Long classId,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate date) {
+        return ApiResponse.success(attendanceService.findByClassId(classId, date));
     }
 
     @GetMapping("/matrix/{classId}")

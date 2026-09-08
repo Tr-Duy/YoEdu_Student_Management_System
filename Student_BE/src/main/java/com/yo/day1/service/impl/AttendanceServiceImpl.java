@@ -60,19 +60,26 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         validateAttendanceDate(courseClass, request.getAttendanceDate());
 
-        if (attendanceRepository.existsByCourseClassIdAndStudentIdAndAttendanceDate(
-                request.getCourseClassId(), request.getStudentId(), request.getAttendanceDate())) {
-            throw new BadRequestException(duplicateAttendanceMessage(request));
-        }
+        java.util.Optional<Attendence> existingOpt = attendanceRepository.findByCourseClassIdAndStudentIdAndAttendanceDate(
+                request.getCourseClassId(), request.getStudentId(), request.getAttendanceDate());
 
-        Attendence attendance = new Attendence();
-        attendance.setStudent(student);
-        attendance.setCourseClass(courseClass);
-        attendance.setAttendanceDate(request.getAttendanceDate());
-        attendance.setStatus(request.getStatus());
-        attendance.setNote(request.getNote());
         Users recorder = authService.findActiveUserByUsername(username);
-        attendance.setRecordedByUser(recorder);
+        Attendence attendance;
+
+        if (existingOpt.isPresent()) {
+            attendance = existingOpt.get();
+            attendance.setStatus(request.getStatus());
+            attendance.setNote(request.getNote());
+            attendance.setRecordedByUser(recorder);
+        } else {
+            attendance = new Attendence();
+            attendance.setStudent(student);
+            attendance.setCourseClass(courseClass);
+            attendance.setAttendanceDate(request.getAttendanceDate());
+            attendance.setStatus(request.getStatus());
+            attendance.setNote(request.getNote());
+            attendance.setRecordedByUser(recorder);
+        }
 
         Attendence saved;
         try {
@@ -119,8 +126,73 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Transactional(readOnly = true)
     @Override
     public List<AttendanceResponse> findByClassId(Long classId) {
+        return findByClassId(classId, null);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<AttendanceResponse> findByClassId(Long classId, LocalDate date) {
         courseClassRepository.findById(classId);
-        return attendanceRepository.findByCourseClassId(classId).stream().map(this::toResponse).toList();
+        if (date != null) {
+            return attendanceRepository.findByCourseClassIdAndAttendanceDate(classId, date)
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        }
+        return attendanceRepository.findByCourseClassId(classId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ClassAttendanceDailyDto> getClassesByDate(LocalDate date) {
+        List<CourseClass> allClasses = courseClassRepository.findAll();
+
+        return allClasses.stream()
+                .filter(c -> c.getStatus() != null && c.getStatus() != com.yo.day1.domain.enums.ClassStatus.CLOSED)
+                .filter(c -> {
+                    boolean dateInRange = !date.isBefore(c.getStartDate())
+                            && (c.getEndDate() == null || !date.isAfter(c.getEndDate()));
+                    boolean matchesDay = matchesScheduledWeekday(date,
+                            c.getScheduleSlot() != null ? (int) c.getScheduleSlot().getWeekday() : null);
+                    boolean hasAttendance = !attendanceRepository
+                            .findByCourseClassIdAndAttendanceDate(c.getId(), date).isEmpty();
+                    return (dateInRange && matchesDay) || hasAttendance;
+                })
+                .map(c -> {
+                    List<Attendence> attendances = attendanceRepository
+                            .findByCourseClassIdAndAttendanceDate(c.getId(), date);
+                    List<Student> eligible = attendanceRepository.findEligibleStudentsForAttendance(c.getId());
+                    int totalStudents = eligible.size();
+                    int attendedCount = attendances.size();
+                    int presentCount = (int) attendances.stream().filter(a -> a.getStatus() == AttendanceStatus.PRESENT).count();
+                    int absentCount = (int) attendances.stream().filter(a -> a.getStatus() == AttendanceStatus.ABSENT).count();
+                    int lateCount = (int) attendances.stream().filter(a -> a.getStatus() == AttendanceStatus.LATE).count();
+                    int excusedCount = (int) attendances.stream().filter(a -> a.getStatus() == AttendanceStatus.EXCUSED).count();
+                    boolean isAttended = attendedCount > 0;
+
+                    return new ClassAttendanceDailyDto(
+                            c.getId(),
+                            c.getClassCode(),
+                            c.getName(),
+                            c.getCourse() != null ? c.getCourse().getId() : null,
+                            c.getCourse() != null ? c.getCourse().getCourseName() : null,
+                            c.getScheduleSlot() != null ? c.getScheduleSlot().getSlotCode() : null,
+                            c.getRoom() != null ? c.getRoom().getName() : null,
+                            c.getMainTeacher() != null ? c.getMainTeacher().getId() : null,
+                            c.getMainTeacher() != null ? c.getMainTeacher().getFullName() : null,
+                            totalStudents,
+                            attendedCount,
+                            presentCount,
+                            absentCount,
+                            lateCount,
+                            excusedCount,
+                            isAttended
+                    );
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)

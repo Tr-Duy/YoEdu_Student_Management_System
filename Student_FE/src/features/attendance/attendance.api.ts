@@ -4,7 +4,8 @@ import type {
   AttendanceCreateRequest,
   AttendanceBatchRequest,
   StudentAttendanceRowDto,
-  StudentResponse
+  StudentResponse,
+  ClassAttendanceDailyDto
 } from '../../types/yoedu';
 
 export interface AttendanceSearchParams {
@@ -20,8 +21,12 @@ export const attendanceApi = {
     return api.post('/api/attendances/batch', data);
   },
 
+  getClassesByDate: async (date: string): Promise<ClassAttendanceDailyDto[]> => {
+    return api.get('/api/attendances/classes-by-date', { params: { date } });
+  },
+
   getByClassId: async (classId: number, params?: AttendanceSearchParams): Promise<AttendanceResponse[]> => {
-    const reqParameters = cleanParams({ attendanceDate: params?.attendanceDate });
+    const reqParameters = cleanParams({ date: params?.attendanceDate });
     return api.get(`/api/attendances/class/${classId}`, { params: reqParameters });
   },
 

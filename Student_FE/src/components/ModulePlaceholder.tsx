@@ -69,27 +69,6 @@ export const ModulePlaceholder: React.FC<ModulePlaceholderProps> = ({
           </div>
         </div>
 
-        {/* System Settings Side Panel */}
-        <div className="glass rounded-3xl p-6 border border-white/5 space-y-4">
-          <h3 className="text-lg font-bold text-slate-100">Thông tin Tích hợp</h3>
-          <div className="space-y-3.5 text-xs">
-            <div className="flex justify-between border-b border-slate-800 pb-2.5">
-              <span className="text-slate-400">Trạng thái API</span>
-              <span className="font-semibold text-emerald-400">Đã kết nối</span>
-            </div>
-            <div className="flex justify-between border-b border-slate-800 pb-2.5">
-              <span className="text-slate-400">Backend Server</span>
-              <span className="font-semibold text-slate-300">http://localhost:8080</span>
-            </div>
-            <div className="flex justify-between border-b border-slate-800 pb-2.5">
-              <span className="text-slate-400">Cơ chế Bảo mật</span>
-              <span className="font-semibold text-slate-300">JWT Bearer Auth</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400">Dữ liệu kết xuất</span>
-              <span className="font-semibold text-brand-400">TanStack Query Cache</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>

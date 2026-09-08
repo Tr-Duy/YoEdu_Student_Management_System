@@ -10,8 +10,20 @@ import java.util.List;
 
 public interface AttendanceRepository extends JpaRepository<Attendence, Long> {
     List<Attendence> findByCourseClassId(Long classId);
-    List<Attendence> findByCourseClassIdAndAttendanceDateYearAndAttendanceDateMonthValue(Long classId, int year, int month);
+    List<Attendence> findByCourseClassIdAndAttendanceDate(Long classId, LocalDate attendanceDate);
+    List<Attendence> findByAttendanceDate(LocalDate attendanceDate);
+    @Query("""
+            SELECT a FROM Attendence a
+            WHERE a.courseClass.id = :classId
+              AND YEAR(a.attendanceDate) = :year
+              AND MONTH(a.attendanceDate) = :month
+            """)
+    List<Attendence> findByCourseClassIdAndAttendanceDateYearAndAttendanceDateMonthValue(
+            @Param("classId") Long classId,
+            @Param("year") int year,
+            @Param("month") int month);
     boolean existsByCourseClassIdAndStudentIdAndAttendanceDate(Long courseClassId, Long studentId, LocalDate attendanceDate);
+    java.util.Optional<Attendence> findByCourseClassIdAndStudentIdAndAttendanceDate(Long courseClassId, Long studentId, LocalDate attendanceDate);
 
     @Query("""
             SELECT e.student FROM Enrollment e

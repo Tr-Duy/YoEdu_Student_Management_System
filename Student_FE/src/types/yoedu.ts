@@ -293,6 +293,25 @@ export interface StudentAttendanceRowDto {
   attendanceByDate: Record<string, AttendanceStatus>;
 }
 
+export interface ClassAttendanceDailyDto {
+  classId: number;
+  classCode: string;
+  className: string;
+  courseId?: number;
+  courseName?: string;
+  scheduleLabel?: string;
+  roomName?: string;
+  teacherId?: number;
+  teacherName?: string;
+  totalStudents: number;
+  attendedCount: number;
+  presentCount: number;
+  absentCount: number;
+  lateCount: number;
+  excusedCount: number;
+  isAttended: boolean;
+}
+
 // ==========================================
 // BILLING & INVOICES (HÓA ĐƠN & TUITION)
 // ==========================================

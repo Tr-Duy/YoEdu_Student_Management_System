@@ -66,7 +66,7 @@ public class AttendanceServiceTest {
         when(courseClassRepository.findById(1L)).thenReturn(Optional.of(courseClass));
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
         when(enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(1L, 1L, EnrollmentStatus.ACTIVE)).thenReturn(true);
-        when(attendanceRepository.existsByCourseClassIdAndStudentIdAndAttendanceDate(1L, 1L, LocalDate.now())).thenReturn(false);
+        when(attendanceRepository.findByCourseClassIdAndStudentIdAndAttendanceDate(1L, 1L, LocalDate.now())).thenReturn(Optional.empty());
         when(authService.findActiveUserByUsername("testuser")).thenReturn(user);
         
         Attendence attendance = new Attendence();
@@ -85,18 +85,39 @@ public class AttendanceServiceTest {
     }
 
     @Test
-    void createThrowsWhenStudentDropped() {
+    void saveBatchUpdatesExistingAttendance() {
         AttendanceCreateRequest request = buildRequest();
         Student student = new Student();
         student.setId(1L);
-        student.setStatus(StudentStatus.DROPPED);
+        student.setStatus(StudentStatus.ACTIVE);
         
-        when(courseClassRepository.findById(1L)).thenReturn(Optional.of(new CourseClass()));
-        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
+        CourseClass courseClass = new CourseClass();
+        courseClass.setId(1L);
+        courseClass.setStartDate(LocalDate.now().minusDays(1));
+        
+        Users user = new Users();
+        user.setId(1L);
+        user.setUsername("testuser");
 
-        assertThatThrownBy(() -> service.create(request, "testuser"))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Không thể điểm danh học viên đã hủy học");
+        Attendence existingAttendance = new Attendence();
+        existingAttendance.setId(10L);
+        existingAttendance.setStudent(student);
+        existingAttendance.setCourseClass(courseClass);
+        existingAttendance.setStatus(AttendanceStatus.ABSENT);
+
+        when(courseClassRepository.findById(1L)).thenReturn(Optional.of(courseClass));
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
+        when(enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(1L, 1L, EnrollmentStatus.ACTIVE)).thenReturn(true);
+        when(attendanceRepository.findByCourseClassIdAndStudentIdAndAttendanceDate(1L, 1L, LocalDate.now()))
+                .thenReturn(Optional.of(existingAttendance));
+        when(authService.findActiveUserByUsername("testuser")).thenReturn(user);
+        when(attendanceRepository.save(any(Attendence.class))).thenReturn(existingAttendance);
+        when(mapper.map(any(Attendence.class), eq(AttendanceResponse.class))).thenReturn(new AttendanceResponse());
+
+        AttendanceResponse result = service.create(request, "testuser");
+
+        assertThat(result).isNotNull();
+        assertThat(existingAttendance.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
     }
 
     // ==================== helpers ====================
