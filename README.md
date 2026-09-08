@@ -1,0 +1,523 @@
+# 🎓 YOEDU - Student Management System
+
+A backend system for managing academic operations of an education center, including students, teachers, classes, enrollments, attendance, learning results, tuition, payments, promotions, and parent access.
+
+Built with **Java and Spring Boot** following a layered backend architecture and RESTful API design.
+
+---
+
+## 📌 Project Overview
+
+YOEDU is a Student Management System designed to support the daily operations of an education center.
+
+The system provides APIs for managing academic data and business workflows across multiple modules, with authentication, authorization, validation, transaction management, pagination, filtering, reporting, and API documentation.
+
+### Main Objectives
+
+- Manage students, teachers, courses and classrooms
+- Manage student enrollment and class assignments
+- Track attendance and learning results
+- Manage student status and status history
+- Handle tuition invoices, payments and promotions
+- Provide role-based access control
+- Provide APIs for parent accounts
+- Support searching, filtering, sorting and pagination
+- Provide reporting APIs for academic and financial data
+
+---
+
+## 🏗️ Architecture
+
+The backend follows a layered architecture:
+
+```text
+Client / Frontend
+       │
+       ▼
+┌─────────────────────┐
+│      Controller     │
+│   REST API Layer    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│       Service       │
+│   Business Logic    │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│     Repository      │
+│   Data Access Layer │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│    MySQL/PostgreSQL │
+│      Database       │
+└─────────────────────┘
+
+The project separates:
+
+Controller
+Service
+Repository
+Entity
+DTO
+Exception Handling
+Security
+Configuration
+Database Migration
+🛠️ Tech Stack
+Backend
+Java 21
+Spring Boot 4
+Spring Web
+Spring Data JPA
+Hibernate
+Maven
+Database
+MySQL
+PostgreSQL
+Flyway
+Security
+Spring Security
+JWT
+Password Encoder
+Role-Based Access Control (RBAC)
+Validation & API
+Jakarta Validation
+DTO Pattern
+Global Exception Handling
+Swagger / OpenAPI
+RESTful API
+Testing
+JUnit 5
+Mockito
+Postman
+Development Tools
+Git
+GitHub
+IntelliJ IDEA
+Docker
+Docker Compose
+🔐 Authentication & Authorization
+
+The system implements authentication and role-based authorization using Spring Security and JWT.
+
+Authentication Flow
+Username / Password
+        │
+        ▼
+   Authentication
+        │
+        ▼
+ Password Verification
+        │
+        ▼
+ Generate JWT Access Token
+        │
+        ▼
+ Client sends JWT
+        │
+        ▼
+ Spring Security Filter
+        │
+        ▼
+ Authorization
+        │
+        ▼
+ Protected REST API
+Main Roles
+ADMIN
+ACADEMIC_STAFF
+CASHIER
+PARENT
+
+Each role is restricted to the business operations appropriate to its responsibilities.
+
+📚 Main Modules
+👨‍🎓 Student Management
+
+Provides APIs for managing student information.
+
+Features:
+
+Create student
+Update student
+Get student details
+List students
+Search students
+Filter students
+Pagination
+Student status management
+Student status history
+Parent-student relationship
+👨‍🏫 Teacher Management
+
+Manage teacher information and academic responsibilities.
+
+Features:
+
+Create teacher
+Update teacher
+Get teacher details
+Search teachers
+Manage teacher information
+Assign teachers to classes
+📖 Course Management
+
+Manage courses offered by the education center.
+
+Features:
+
+Course CRUD
+Course information
+Course status
+Course-class relationship
+🏫 Classroom Management
+
+Manage classes and class schedules.
+
+Features:
+
+Create classroom
+Update classroom
+Manage class capacity
+Assign course
+Assign teacher
+Manage schedule
+Manage class status
+📝 Enrollment
+
+Manage the relationship between students and classes.
+
+Features:
+
+Enroll student into a class
+View students in a class
+View classes of a student
+Prevent duplicate enrollment
+Validate class capacity
+Manage enrollment status
+📅 Attendance
+
+Manage student attendance for classes.
+
+Features:
+
+Record attendance
+Track attendance history
+Detect absent students
+Apply business rules for student status
+Generate notification records for important attendance events
+📊 Learning Results
+
+Manage student learning results.
+
+Features:
+
+Record learning results
+Update academic performance
+View student learning history
+Query learning results by student/class
+🔄 Student Status Management
+
+Track changes in student status.
+
+Examples:
+
+ACTIVE
+SUSPENDED
+CANCELLED
+COMPLETED
+
+When a student's status changes, the system records:
+
+Previous status
+New status
+Reason
+User who performed the change
+Timestamp
+
+This provides an audit trail for important student operations.
+
+💰 Tuition & Billing
+
+Handle tuition-related business workflows.
+
+Features:
+
+Create tuition invoice
+Calculate tuition
+Apply promotions
+Track invoice status
+Calculate remaining balance
+Handle overpayment
+Handle underpayment
+Track payment history
+
+Financial calculations use:
+
+BigDecimal
+
+instead of floating-point types for monetary values.
+
+💳 Payment
+
+Manage student payment transactions.
+
+Features:
+
+Create payment
+Record payment amount
+Track payment status
+Calculate remaining balance
+Handle overpayment / underpayment
+Maintain payment history
+Generate notification after successful payment
+
+Payment operations are handled using transactional business logic.
+
+🎁 Promotion
+
+Manage promotional programs and discounts.
+
+Features:
+
+Create promotion
+Update promotion
+Configure discount
+Validate promotion period
+Apply promotion to tuition
+Calculate discounted tuition
+🔎 Search, Filtering & Pagination
+
+The backend supports APIs designed for real-world list screens.
+
+Examples:
+
+GET /students?page=0&size=10
+GET /students?name=Nguyen
+GET /students?academicLevel=GOOD
+GET /students?page=0&size=20&sort=createdAt,desc
+
+The implementation supports:
+
+Pagination
+Sorting
+Dynamic filtering
+Multiple query conditions
+Specification-based queries
+Spring Data JPA query methods
+📈 Reporting
+
+The system provides reporting APIs for academic and financial information.
+
+Examples include:
+
+New students by month
+Attendance reports
+Students with multiple absences
+Monthly revenue
+Overdue tuition
+Student/class statistics
+
+The project uses query-based approaches such as:
+
+JPQL
+Native SQL
+DTO projections
+Aggregate queries
+🔄 Transaction Management
+
+Complex business operations are handled using Spring transactions.
+
+Example:
+
+@Transactional
+public PaymentResponse processPayment(...) {
+    // Validate invoice
+    // Calculate payment
+    // Update invoice
+    // Save payment
+    // Create notification
+}
+
+This ensures that related database operations are committed consistently.
+
+📦 DTO & API Design
+
+The backend does not expose entities directly for every API.
+
+DTOs are used to separate:
+
+Request
+   ↓
+Request DTO
+   ↓
+Service
+   ↓
+Entity
+   ↓
+Repository
+   ↓
+Database
+   ↓
+Response DTO
+   ↓
+REST API
+
+This helps:
+
+Control API payloads
+Prevent unwanted entity exposure
+Separate API contracts from database entities
+Improve frontend integration
+⚠️ Exception Handling
+
+The backend uses centralized exception handling.
+
+Common cases include:
+
+Resource not found
+Invalid request
+Validation errors
+Unauthorized access
+Forbidden operations
+Business rule violations
+Duplicate data
+
+Errors are returned using a consistent API response structure.
+
+📖 API Documentation
+
+REST APIs are documented using:
+
+Swagger / OpenAPI
+
+The documentation provides:
+
+Endpoint information
+HTTP methods
+Request parameters
+Request body
+Response structure
+Validation errors
+Authentication requirements
+
+Swagger can be used to explore and test the API during development.
+
+🧪 Testing
+
+The project uses:
+
+JUnit 5
+Mockito
+
+Testing focuses on important service-layer business logic.
+
+Example test scenarios:
+
+Create student successfully
+Create student with invalid data
+Student not found
+Duplicate enrollment
+Class reaches maximum capacity
+Invalid payment amount
+Successful payment
+Insufficient payment
+Promotion applied successfully
+Unauthorized operation
+🗄️ Database Design
+
+The system is designed around a relational database model.
+
+Main business entities include:
+
+Student
+Teacher
+Course
+Classroom
+Enrollment
+ScheduleSlot
+Attendance
+LearningResult
+StudentStatusHistory
+User
+Role
+Permission
+TuitionInvoice
+Payment
+Promotion
+StudentPromotion
+Notification
+
+Relationships between entities are managed using JPA/Hibernate.
+
+📁 Project Structure
+src/
+└── main/
+    ├── java/
+    │   └── ...
+    │
+    └── resources/
+        ├── application.yml
+        └── db/
+            └── migration/
+                ├── V1__create_schema.sql
+                ├── V2__seed_demo_data.sql
+                └── ...
+
+A typical backend package structure:
+
+controller/
+service/
+repository/
+entity/
+dto/
+exception/
+security/
+config/
+mapper/
+🚀 Getting Started
+1. Clone repository
+git clone https://github.com/Tr-Duy/YOEDU-Student-Management-System.git
+cd YOEDU-Student-Management-System
+2. Configure database
+
+Create a MySQL or PostgreSQL database and configure the connection in:
+
+src/main/resources/application.yml
+
+Example:
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/yoedu
+    username: your_username
+    password: your_password
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+Update the database URL, username and password according to your local environment.
+
+3. Run the application
+
+Using Maven:
+
+./mvnw spring-boot:run
+
+On Windows:
+
+.\mvnw spring-boot:run
+4. Test API
+
+Use:
+
+Postman
+Swagger / OpenAPI
+
+The backend will expose RESTful endpoints for the main YOEDU modules.
