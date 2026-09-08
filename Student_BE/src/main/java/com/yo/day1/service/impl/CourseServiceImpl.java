@@ -2,6 +2,7 @@ package com.yo.day1.service.impl;
 
 import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.Course;
+import com.yo.day1.domain.spec.CourseSpec;
 import com.yo.day1.dto.course.CourseResponse;
 import com.yo.day1.dto.course.CourseUpsertRequest;
 import com.yo.day1.repository.CourseRepository;
@@ -22,7 +23,12 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public List<CourseResponse> findAll() {
-        return courseRepository.findAll()
+        return findAll(null);
+    }
+
+    @Override
+    public List<CourseResponse> findAll(String search) {
+        return courseRepository.findAll(CourseSpec.filter(search))
                 .stream()
                 .map(c -> mapper.map(c, CourseResponse.class))
                 .toList();

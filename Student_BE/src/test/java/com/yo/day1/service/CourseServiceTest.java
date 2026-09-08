@@ -41,10 +41,24 @@ public class CourseServiceTest {
         Course course = createEntity(1L);
         CourseResponse mockResponse = createMockResponse(1L);
 
-        when(repository.findAll()).thenReturn(List.of(course));
+        when(repository.findAll(any(org.springframework.data.jpa.domain.Specification.class))).thenReturn(List.of(course));
         when(mapper.map(course, CourseResponse.class)).thenReturn(mockResponse);
 
         List<CourseResponse> result = service.findAll();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void findAllWithSearchReturnsFilteredList() {
+        Course course = createEntity(1L);
+        CourseResponse mockResponse = createMockResponse(1L);
+
+        when(repository.findAll(any(org.springframework.data.jpa.domain.Specification.class))).thenReturn(List.of(course));
+        when(mapper.map(course, CourseResponse.class)).thenReturn(mockResponse);
+
+        List<CourseResponse> result = service.findAll("JAVA01");
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getId()).isEqualTo(1L);

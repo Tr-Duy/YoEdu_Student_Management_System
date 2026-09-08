@@ -6,6 +6,7 @@ import com.yo.day1.dto.course.CourseUpsertRequest;
 import com.yo.day1.service.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/course")
 @RequiredArgsConstructor
@@ -22,8 +24,10 @@ public class CourseController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_STAFF')")
-    public ResponseEntity<ApiResponse<List<CourseResponse>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.success(courseService.findAll()));
+    public ResponseEntity<ApiResponse<List<CourseResponse>>> getAll(
+            @RequestParam(required = false) String search) {
+        log.info("COURSE SEARCH PARAM = [{}]", search);
+        return ResponseEntity.ok(ApiResponse.success(courseService.findAll(search)));
     }
 
     @GetMapping("/{id}")

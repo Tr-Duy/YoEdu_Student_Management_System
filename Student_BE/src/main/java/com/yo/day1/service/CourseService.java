@@ -8,8 +8,10 @@ import java.util.Optional;
 
 public interface CourseService {
     List<CourseResponse> findAll();
+    List<CourseResponse> findAll(String search);
     Optional<CourseResponse> findById(Long id);
     CourseResponse save(CourseUpsertRequest req);
     CourseResponse update(Long id, CourseUpsertRequest req);
     void delete(Long id);
 }
+
