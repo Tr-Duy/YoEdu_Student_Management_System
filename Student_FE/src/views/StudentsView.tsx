@@ -185,8 +185,8 @@ export const StudentsView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Quản lý Học viên</h2>
-          <p className="text-sm text-slate-400 mt-1">Tra cứu danh sách học viên và hồ sơ cá nhân.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Quản lý Học viên</h2>
+          <p className="text-sm text-foreground-muted mt-1">Tra cứu danh sách học viên và hồ sơ cá nhân.</p>
         </div>
         <Button onClick={handleCreateClick} className="gap-2">
           <Plus size={16} /> Thêm Học viên
@@ -194,15 +194,15 @@ export const StudentsView: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-surface border border-border p-4 rounded-xl shadow-sm transition-colors">
         <div className="relative w-full md:w-96">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm mã hoặc tên học viên..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 focus:border-brand-500 focus:outline-none"
+            className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-brand-500 focus:outline-none transition-colors"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
@@ -211,7 +211,7 @@ export const StudentsView: React.FC = () => {
               key={filter}
               onClick={() => { setStatusFilter(filter); setPage(0); }}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === filter ? 'bg-brand-500/10 text-brand-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                statusFilter === filter ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold' : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
               }`}
             >
               {filter === 'ALL' && 'Tất cả'}
@@ -224,7 +224,7 @@ export const StudentsView: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm transition-colors">
         <Table>
           <TableHeader>
             <TableRow>
@@ -248,16 +248,16 @@ export const StudentsView: React.FC = () => {
             ) : (
               studentsList.map((student) => (
                 <TableRow key={student.id}>
-                  <TableCell className="font-mono text-brand-400 font-medium">{student.studentCode}</TableCell>
-                  <TableCell className="font-medium text-slate-200">{student.fullName}</TableCell>
+                  <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{student.studentCode}</TableCell>
+                  <TableCell className="font-medium text-foreground">{student.fullName}</TableCell>
                   <TableCell>{student.gradeLevel}</TableCell>
                   <TableCell>
                     {student.parent ? (
                       <div className="text-xs">
-                        <div className="font-medium text-slate-300">{student.parent.fullName}</div>
-                        <div className="text-slate-500">{student.parent.phone}</div>
+                        <div className="font-medium text-foreground">{student.parent.fullName}</div>
+                        <div className="text-foreground-muted">{student.parent.phone}</div>
                       </div>
-                    ) : <span className="text-slate-500 text-xs italic">Chưa liên kết</span>}
+                    ) : <span className="text-foreground-muted text-xs italic">Chưa liên kết</span>}
                   </TableCell>
                   <TableCell>
                     <Badge variant={student.status === 'ACTIVE' ? 'success' : student.status === 'PAUSED' ? 'warning' : 'danger'}>
@@ -268,7 +268,7 @@ export const StudentsView: React.FC = () => {
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="sm" onClick={() => { setSelectedStudent(student); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
                       <Button variant="ghost" size="sm" onClick={() => handleEditClick(student)}><Edit size={16}/></Button>
-                      <Button variant="ghost" size="sm" className="text-rose-400 hover:text-rose-300" onClick={() => { setSelectedStudent(student); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
+                      <Button variant="ghost" size="sm" className="text-rose-600 dark:text-rose-400 hover:text-rose-500" onClick={() => { setSelectedStudent(student); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -277,8 +277,8 @@ export const StudentsView: React.FC = () => {
           </TableBody>
         </Table>
         {!isLoading && totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
-            <span className="text-sm text-slate-500">Trang {page + 1} / {totalPages}</span>
+          <div className="p-4 border-t border-border flex justify-between items-center bg-surface-hover/30">
+            <span className="text-sm text-foreground-muted">Trang {page + 1} / {totalPages}</span>
             <div className="flex gap-2">
               <Button variant="secondary" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Trước</Button>
               <Button variant="secondary" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Sau</Button>
@@ -291,13 +291,13 @@ export const StudentsView: React.FC = () => {
       <Modal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} title="Chi tiết Học viên" maxWidth="2xl">
         {selectedStudent && (
           <div className="space-y-6">
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/50 border border-slate-800">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-hover/50 border border-border">
               <div className="h-12 w-12 rounded-full bg-brand-600 flex items-center justify-center font-bold text-white text-xl">
                 {selectedStudent.fullName.charAt(0)}
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-slate-100">{selectedStudent.fullName}</h4>
-                <div className="text-sm text-slate-400 mt-1 flex gap-3">
+                <h4 className="text-lg font-semibold text-foreground">{selectedStudent.fullName}</h4>
+                <div className="text-sm text-foreground-muted mt-1 flex gap-3">
                   <span>{selectedStudent.studentCode}</span>
                   <span>{selectedStudent.gradeLevel}</span>
                 </div>
@@ -306,23 +306,23 @@ export const StudentsView: React.FC = () => {
             
             <div className="grid grid-cols-2 gap-6 text-sm">
               <div className="space-y-3">
-                <h5 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Thông tin cá nhân</h5>
-                <div className="flex justify-between"><span className="text-slate-500">Ngày sinh:</span><span className="text-slate-200">{selectedStudent.dateOfBirth}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Giới tính:</span><span className="text-slate-200">{selectedStudent.gender === 'MALE' ? 'Nam' : selectedStudent.gender === 'FEMALE' ? 'Nữ' : 'Khác'}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">SĐT:</span><span className="text-slate-200">{selectedStudent.phone || 'N/A'}</span></div>
+                <h5 className="font-semibold text-foreground border-b border-border pb-2">Thông tin cá nhân</h5>
+                <div className="flex justify-between"><span className="text-foreground-muted">Ngày sinh:</span><span className="text-foreground">{selectedStudent.dateOfBirth}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Giới tính:</span><span className="text-foreground">{selectedStudent.gender === 'MALE' ? 'Nam' : selectedStudent.gender === 'FEMALE' ? 'Nữ' : 'Khác'}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">SĐT:</span><span className="text-foreground">{selectedStudent.phone || 'N/A'}</span></div>
               </div>
               <div className="space-y-3">
-                <h5 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Thông tin phụ huynh</h5>
+                <h5 className="font-semibold text-foreground border-b border-border pb-2">Thông tin phụ huynh</h5>
                 {selectedStudent.parent ? (
                   <>
-                    <div className="flex justify-between"><span className="text-slate-500">Họ tên:</span><span className="text-slate-200">{selectedStudent.parent.fullName}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">SĐT:</span><span className="text-slate-200">{selectedStudent.parent.phone}</span></div>
+                    <div className="flex justify-between"><span className="text-foreground-muted">Họ tên:</span><span className="text-foreground">{selectedStudent.parent.fullName}</span></div>
+                    <div className="flex justify-between"><span className="text-foreground-muted">SĐT:</span><span className="text-foreground">{selectedStudent.parent.phone}</span></div>
                   </>
-                ) : <div className="text-slate-500 italic">Chưa liên kết</div>}
+                ) : <div className="text-foreground-muted italic">Chưa liên kết</div>}
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setIsDetailsOpen(false)}>Đóng</Button>
             </div>
           </div>
@@ -346,14 +346,14 @@ export const StudentsView: React.FC = () => {
             </Select>
           </div>
 
-          <div className="border-t border-slate-800 pt-4">
+          <div className="border-t border-border pt-4">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" {...register('withParent')} className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-brand-500 focus:ring-brand-500/50 focus:ring-offset-slate-900" />
-              <span className="text-sm font-medium text-slate-300">Liên kết với Phụ huynh mới</span>
+              <input type="checkbox" {...register('withParent')} className="w-4 h-4 rounded border-border bg-surface text-brand-500 focus:ring-brand-500/50" />
+              <span className="text-sm font-medium text-foreground-secondary">Liên kết với Phụ huynh mới</span>
             </label>
             
             {watchWithParent && (
-              <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+              <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-surface-hover/50 rounded-xl border border-border">
                 <Input label="Họ tên Phụ huynh *" {...register('parentFullName')} error={errors.parentFullName?.message} />
                 <Input label="Số điện thoại *" {...register('parentPhone')} error={errors.parentPhone?.message} />
                 <Input label="Email" type="email" {...register('parentEmail')} error={errors.parentEmail?.message} />
@@ -364,7 +364,7 @@ export const StudentsView: React.FC = () => {
             )}
           </div>
           
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="secondary" type="button" onClick={() => setIsUpsertOpen(false)}>Hủy</Button>
             <Button variant="primary" type="submit" isLoading={upsertMutation.isPending}>Lưu</Button>
           </div>

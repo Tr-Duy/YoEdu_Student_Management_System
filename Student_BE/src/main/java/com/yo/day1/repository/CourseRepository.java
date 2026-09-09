@@ -10,5 +10,7 @@ import java.util.List;
 public interface CourseRepository extends JpaRepository<Course, Long>, JpaSpecificationExecutor<Course> {
     @Query("SELECT o FROM Course o where o.isActive=1")
     List<Course> findByIdCourseActive();
+
+    boolean existsByCourseCode(String courseCode);
 }
 

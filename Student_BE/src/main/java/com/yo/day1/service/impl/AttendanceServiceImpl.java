@@ -257,8 +257,8 @@ public class AttendanceServiceImpl implements AttendanceService {
         result.setStudentId(a.getStudent().getId());
         result.setStudentName(a.getStudent().getFullName());
         result.setStatus(a.getStatus().name());
-        result.setRecordedByUserId(a.getRecordedByUser().getId());
-        result.setRecordedByUsername(a.getRecordedByUser().getUsername());
+        result.setRecordedByUserId(a.getRecordedByUser() != null ? a.getRecordedByUser().getId() : null);
+        result.setRecordedByUsername(a.getRecordedByUser() != null ? a.getRecordedByUser().getUsername() : null);
         return result;
     }
 }

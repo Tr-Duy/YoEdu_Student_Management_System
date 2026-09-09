@@ -130,8 +130,8 @@ export const CoursesView: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Quản lý Khóa học</h2>
-          <p className="text-sm text-slate-400 mt-1">Thiết lập danh mục khóa học, học phí tiêu chuẩn.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Quản lý Khóa học</h2>
+          <p className="text-sm text-foreground-muted mt-1">Thiết lập danh mục khóa học, học phí tiêu chuẩn.</p>
         </div>
         <Button onClick={handleCreateClick} className="gap-2">
           <Plus size={16} /> Thêm Khóa học
@@ -139,43 +139,43 @@ export const CoursesView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-brand-500/10 text-brand-400 p-3 rounded-lg"><BookOpen size={20}/></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm transition-colors">
+            <div className="bg-brand-500/10 text-brand-600 dark:text-brand-400 p-3 rounded-lg"><BookOpen size={20}/></div>
             <div>
-               <div className="text-sm text-slate-400">Tổng khóa học</div>
-               <div className="text-xl font-bold text-slate-200">{totalItems}</div>
+               <div className="text-sm text-foreground-muted">Tổng khóa học</div>
+               <div className="text-xl font-bold text-foreground">{totalItems}</div>
             </div>
          </div>
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><DollarSign size={20}/></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm transition-colors">
+            <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg"><DollarSign size={20}/></div>
             <div>
-               <div className="text-sm text-slate-400">Học phí thấp nhất</div>
-               <div className="text-xl font-bold text-slate-200">{formatVND(lowestPrice)}</div>
+               <div className="text-sm text-foreground-muted">Học phí thấp nhất</div>
+               <div className="text-xl font-bold text-foreground">{formatVND(lowestPrice)}</div>
             </div>
          </div>
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-amber-500/10 text-amber-400 p-3 rounded-lg"><DollarSign size={20}/></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm transition-colors">
+            <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-lg"><DollarSign size={20}/></div>
             <div>
-               <div className="text-sm text-slate-400">Học phí cao nhất</div>
-               <div className="text-xl font-bold text-slate-200">{formatVND(highestPrice)}</div>
+               <div className="text-sm text-foreground-muted">Học phí cao nhất</div>
+               <div className="text-xl font-bold text-foreground">{formatVND(highestPrice)}</div>
             </div>
          </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-surface border border-border p-4 rounded-xl shadow-sm transition-colors">
         <div className="relative w-full md:w-96">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm theo mã hoặc tên khóa học..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 focus:border-brand-500 focus:outline-none"
+            className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-brand-500 focus:outline-none transition-colors"
           />
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm transition-colors">
         <Table>
           <TableHeader>
             <TableRow>
@@ -188,7 +188,7 @@ export const CoursesView: React.FC = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-8 text-slate-500">Đang tải...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-foreground-muted">Đang tải...</TableCell></TableRow>
             ) : paginatedCourses.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-8">
@@ -198,24 +198,24 @@ export const CoursesView: React.FC = () => {
             ) : (
               paginatedCourses.map((course) => (
                 <TableRow key={course.id}>
-                  <TableCell className="font-mono text-brand-400 font-medium">{course.courseCode}</TableCell>
+                  <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{course.courseCode}</TableCell>
                   <TableCell>
-                    <div className="font-medium text-slate-200">{course.name}</div>
-                    <div className="text-xs text-slate-500 mt-0.5 truncate max-w-[300px]">{course.description}</div>
+                    <div className="font-medium text-foreground">{course.name}</div>
+                    <div className="text-xs text-foreground-muted mt-0.5 truncate max-w-[300px]">{course.description}</div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1.5 text-slate-300">
-                       <Clock size={14} className="text-slate-500" /> {course.durationMonths} tháng
+                    <div className="flex items-center gap-1.5 text-foreground-secondary">
+                       <Clock size={14} className="text-foreground-muted" /> {course.durationMonths} tháng
                     </div>
                   </TableCell>
-                  <TableCell className="font-semibold text-emerald-400">
+                  <TableCell className="font-semibold text-emerald-600 dark:text-emerald-400">
                      {formatVND(course.basePrice)}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="sm" onClick={() => { setSelectedCourse(course); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
                       <Button variant="ghost" size="sm" onClick={() => handleEditClick(course)}><Edit size={16}/></Button>
-                      <Button variant="ghost" size="sm" className="text-rose-400 hover:text-rose-300" onClick={() => { setSelectedCourse(course); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
+                      <Button variant="ghost" size="sm" className="text-rose-600 dark:text-rose-400 hover:text-rose-500" onClick={() => { setSelectedCourse(course); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -224,8 +224,8 @@ export const CoursesView: React.FC = () => {
           </TableBody>
         </Table>
         {!isLoading && totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
-            <span className="text-sm text-slate-500">Trang {page + 1} / {totalPages}</span>
+          <div className="p-4 border-t border-border flex justify-between items-center bg-surface-hover/30">
+            <span className="text-sm text-foreground-muted">Trang {page + 1} / {totalPages}</span>
             <div className="flex gap-2">
               <Button variant="secondary" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Trước</Button>
               <Button variant="secondary" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Sau</Button>
@@ -237,34 +237,34 @@ export const CoursesView: React.FC = () => {
       <Modal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} title="Chi tiết Khóa học" maxWidth="xl">
         {selectedCourse && (
           <div className="space-y-6">
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/50 border border-slate-800">
-              <div className="h-12 w-12 rounded-lg bg-brand-600/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-bold text-xl">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-hover/50 border border-border">
+              <div className="h-12 w-12 rounded-lg bg-brand-600/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 flex items-center justify-center font-bold text-xl">
                 <BookOpen size={24} />
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-slate-100">{selectedCourse.name}</h4>
-                <div className="text-sm text-slate-400 mt-1">{selectedCourse.courseCode}</div>
+                <h4 className="text-lg font-semibold text-foreground">{selectedCourse.name}</h4>
+                <div className="text-sm text-foreground-muted mt-1">{selectedCourse.courseCode}</div>
               </div>
             </div>
             
             <div className="space-y-4 text-sm">
-               <div className="flex justify-between border-b border-slate-800 pb-2">
-                  <span className="text-slate-500">Thời lượng đào tạo:</span>
-                  <span className="text-slate-200 font-medium">{selectedCourse.durationMonths} tháng</span>
+               <div className="flex justify-between border-b border-border pb-2">
+                  <span className="text-foreground-muted">Thời lượng đào tạo:</span>
+                  <span className="text-foreground font-medium">{selectedCourse.durationMonths} tháng</span>
                </div>
-               <div className="flex justify-between border-b border-slate-800 pb-2">
-                  <span className="text-slate-500">Học phí cơ bản (chưa giảm trừ):</span>
-                  <span className="text-emerald-400 font-bold">{formatVND(selectedCourse.basePrice)}</span>
+               <div className="flex justify-between border-b border-border pb-2">
+                  <span className="text-foreground-muted">Học phí cơ bản (chưa giảm trừ):</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{formatVND(selectedCourse.basePrice)}</span>
                </div>
                <div>
-                  <span className="text-slate-500 block mb-2">Mô tả chi tiết:</span>
-                  <div className="text-slate-300 bg-slate-900 p-3 rounded-lg border border-slate-800 whitespace-pre-wrap leading-relaxed">
+                  <span className="text-foreground-muted block mb-2">Mô tả chi tiết:</span>
+                  <div className="text-foreground-secondary bg-surface-hover/40 p-3 rounded-lg border border-border whitespace-pre-wrap leading-relaxed">
                      {selectedCourse.description}
                   </div>
                </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setIsDetailsOpen(false)}>Đóng</Button>
             </div>
           </div>
@@ -281,13 +281,13 @@ export const CoursesView: React.FC = () => {
                <Input label="Học phí cơ bản (VND) *" type="number" {...register('basePrice')} error={errors.basePrice?.message as string} />
             </div>
             <div className="space-y-1.5">
-               <label className="block text-sm font-medium text-slate-300">Mô tả chi tiết *</label>
-               <textarea rows={4} {...register('description')} className="w-full bg-slate-900 border border-slate-800 rounded-lg py-2 px-3 text-sm text-slate-100 focus:border-brand-500 focus:outline-none" />
-               {errors.description && <p className="text-rose-400 text-xs">{errors.description.message}</p>}
+               <label className="block text-sm font-medium text-foreground-secondary">Mô tả chi tiết *</label>
+               <textarea rows={4} {...register('description')} className="w-full bg-surface border border-border rounded-lg py-2 px-3 text-sm text-foreground placeholder:text-foreground-muted focus:border-brand-500 focus:outline-none transition-colors" />
+               {errors.description && <p className="text-rose-500 text-xs">{errors.description.message}</p>}
             </div>
           </div>
           
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="secondary" type="button" onClick={() => setIsUpsertOpen(false)}>Hủy</Button>
             <Button variant="primary" type="submit" isLoading={upsertMutation.isPending}>Lưu</Button>
           </div>
@@ -306,3 +306,5 @@ export const CoursesView: React.FC = () => {
     </div>
   );
 };
+
+export default CoursesView;

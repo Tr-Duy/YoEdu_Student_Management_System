@@ -80,6 +80,8 @@ public class TeacherSpec {
                 );
             // is_active = true hoặc false
 
+            predicates.add(cb.equal(root.get("deleted"), false));
+
             return cb.and(
                     predicates.toArray(new Predicate[0])
             );

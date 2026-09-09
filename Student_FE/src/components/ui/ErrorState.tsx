@@ -14,12 +14,12 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   onRetry 
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-rose-500/20 rounded-xl bg-rose-500/5">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/10 text-rose-500 mb-4">
+    <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-rose-500/20 rounded-xl bg-rose-500/5 transition-colors">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-500 mb-4 border border-rose-500/20">
         <AlertCircle size={24} />
       </div>
-      <h3 className="text-sm font-semibold text-slate-200">{title}</h3>
-      <p className="text-sm text-slate-500 mt-1 max-w-sm mb-4">{description}</p>
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <p className="text-sm text-foreground-muted mt-1 max-w-sm mb-4">{description}</p>
       {onRetry && (
         <Button variant="secondary" onClick={onRetry} className="gap-2">
           <RefreshCcw size={16} />

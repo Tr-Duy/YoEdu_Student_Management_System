@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface TeacherRepository extends JpaRepository<Teacher, Long>, JpaSpecificationExecutor<Teacher> {
     List<Teacher> findByStatus(TeacherStatus status);
     List<Teacher> findByIsActive(Boolean isActive);
+    List<Teacher> findByIsActiveAndDeletedFalse(Boolean isActive);
+    List<Teacher> findByDeletedFalse();
     Optional<Teacher> findByTeacherCode(String teacherCode);
     boolean existsByTeacherCode(String teacherCode);
     boolean existsByPhone(String phone);

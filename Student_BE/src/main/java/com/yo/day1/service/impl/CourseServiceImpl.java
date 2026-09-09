@@ -42,6 +42,9 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponse save(CourseUpsertRequest req) {
+        if (courseRepository.existsByCourseCode(req.getCourseCode())) {
+            throw new com.yo.day1.common.exception.ConflictException("Mã khóa học đã tồn tại: " + req.getCourseCode());
+        }
         Course course = mapper.map(req, Course.class);
         return mapper.map(courseRepository.save(course), CourseResponse.class);
     }
@@ -50,6 +53,10 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponse update(Long id, CourseUpsertRequest req) {
         Course existing = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundExeception("Course not found: " + id));
+        if (existing.getCourseCode() != null && !existing.getCourseCode().equalsIgnoreCase(req.getCourseCode())
+                && courseRepository.existsByCourseCode(req.getCourseCode())) {
+            throw new com.yo.day1.common.exception.ConflictException("Mã khóa học đã tồn tại: " + req.getCourseCode());
+        }
         mapper.map(req, existing);
         return mapper.map(courseRepository.save(existing), CourseResponse.class);
     }

@@ -1,9 +1,43 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+:root {
+  --background: 248 250 252;          /* slate-50 */
+  --surface: 255 255 255;             /* white */
+  --surface-elevated: 255 255 255;    /* white */
+  --surface-hover: 241 245 249;       /* slate-100 */
+  --border: 226 232 240;              /* slate-200 */
+  --foreground: 15 23 42;             /* slate-900 */
+  --foreground-secondary: 51 65 85;   /* slate-700 */
+  --foreground-muted: 100 116 139;    /* slate-500 */
+  --primary: 124 58 237;              /* brand-600 */
+  --primary-hover: 109 40 217;        /* brand-700 */
+  --success: 5 150 105;               /* emerald-600 */
+  --warning: 217 119 6;               /* amber-600 */
+  --danger: 225 29 72;                /* rose-600 */
+  --info: 37 99 235;                  /* blue-600 */
+}
+
+.dark {
+  --background: 2 6 23;               /* slate-950 */
+  --surface: 15 23 42;                /* slate-900 */
+  --surface-elevated: 30 41 59;       /* slate-800 */
+  --surface-hover: 30 41 59;          /* slate-800 */
+  --border: 30 41 59;                 /* slate-800 */
+  --foreground: 248 250 252;          /* slate-50 */
+  --foreground-secondary: 226 232 240;/* slate-200 */
+  --foreground-muted: 148 163 184;    /* slate-400 */
+  --primary: 139 92 246;              /* brand-500 */
+  --primary-hover: 124 58 237;        /* brand-600 */
+  --success: 52 211 153;              /* emerald-400 */
+  --warning: 251 191 36;              /* amber-400 */
+  --danger: 244 63 94;                /* rose-500 */
+  --info: 96 165 250;                 /* blue-400 */
+}
+
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 antialiased font-sans selection:bg-brand-500 selection:text-white;
+    @apply bg-background text-foreground antialiased font-sans selection:bg-brand-500 selection:text-white transition-colors duration-150;
   }
 }
 
@@ -18,12 +52,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(148, 163, 184, 0.25);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(148, 163, 184, 0.45);
 }
 
 /* Animations */

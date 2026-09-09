@@ -37,7 +37,6 @@ public class Users extends AuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
-    @org.hibernate.annotations.NotFound(action = org.hibernate.annotations.NotFoundAction.IGNORE)
     private Teacher teacher;
 
     @Column(name = "is_active", nullable = false)

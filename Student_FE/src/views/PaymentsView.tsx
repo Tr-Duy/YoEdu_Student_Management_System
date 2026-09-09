@@ -141,8 +141,8 @@ export const PaymentsView: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Ghi nhận Thanh toán</h2>
-          <p className="text-sm text-slate-400 mt-1">Thu tiền học phí, cấp biên lai và lịch sử giao dịch.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Ghi nhận Thanh toán</h2>
+          <p className="text-sm text-foreground-muted mt-1">Thu tiền học phí, cấp biên lai và lịch sử giao dịch.</p>
         </div>
         <Button onClick={() => setIsRecordOpen(true)} className="gap-2">
           <Plus size={16} /> Lập phiếu thu
@@ -150,36 +150,36 @@ export const PaymentsView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><Coins size={20}/></div>
-            <div><div className="text-sm text-slate-400">Tổng đã thu</div><div className="text-xl font-bold text-emerald-400">{formatVND(totalCollected)}</div></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm transition-colors">
+            <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg"><Coins size={20}/></div>
+            <div><div className="text-sm text-foreground-muted">Tổng đã thu</div><div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{formatVND(totalCollected)}</div></div>
          </div>
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-amber-500/10 text-amber-400 p-3 rounded-lg"><DollarSign size={20}/></div>
-            <div><div className="text-sm text-slate-400">Tiền mặt</div><div className="text-xl font-bold text-amber-400">{formatVND(cashTotal)}</div></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm transition-colors">
+            <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-lg"><DollarSign size={20}/></div>
+            <div><div className="text-sm text-foreground-muted">Tiền mặt</div><div className="text-xl font-bold text-amber-600 dark:text-amber-400">{formatVND(cashTotal)}</div></div>
          </div>
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-indigo-500/10 text-indigo-400 p-3 rounded-lg"><CreditCard size={20}/></div>
-            <div><div className="text-sm text-slate-400">Chuyển khoản</div><div className="text-xl font-bold text-indigo-400">{formatVND(transferTotal)}</div></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm transition-colors">
+            <div className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 p-3 rounded-lg"><CreditCard size={20}/></div>
+            <div><div className="text-sm text-foreground-muted">Chuyển khoản</div><div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{formatVND(transferTotal)}</div></div>
          </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-surface border border-border p-4 rounded-xl shadow-sm transition-colors">
         <div className="relative w-full md:w-96">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm theo mã phiếu, học viên, hóa đơn..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500"
+            className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:border-brand-500 transition-colors"
           />
         </div>
         <div className="w-full md:w-64">
            <select
              value={filterStudentId || ''}
              onChange={(e) => setFilterStudentId(e.target.value ? Number(e.target.value) : null)}
-             className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500"
+             className="w-full bg-surface border border-border rounded-lg px-4 py-2 text-sm text-foreground focus:outline-none focus:border-brand-500 transition-colors"
            >
              <option value="">Lọc theo học viên (Tất cả)</option>
              {studentsData?.map(s => <option key={s.id} value={s.id}>{s.fullName} ({s.studentCode})</option>)}
@@ -187,10 +187,10 @@ export const PaymentsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-         <div className="px-6 py-4 border-b border-slate-800 bg-slate-800/50 flex items-center gap-2">
-            <History size={16} className="text-brand-400" />
-            <span className="font-semibold text-slate-200">Lịch sử giao dịch thu học phí</span>
+      <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm transition-colors">
+         <div className="px-6 py-4 border-b border-border bg-surface-hover/50 flex items-center gap-2">
+            <History size={16} className="text-brand-600 dark:text-brand-400" />
+            <span className="font-semibold text-foreground">Lịch sử giao dịch thu học phí</span>
          </div>
          <Table>
             <TableHeader>
@@ -206,21 +206,21 @@ export const PaymentsView: React.FC = () => {
             </TableHeader>
             <TableBody>
                {isPaymentsLoading ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-slate-500">Đang tải...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-foreground-muted">Đang tải...</TableCell></TableRow>
                ) : filteredPayments.length === 0 ? (
                   <TableRow><TableCell colSpan={7} className="py-8"><EmptyState title="Không có dữ liệu" description="Không tìm thấy phiếu thu nào." /></TableCell></TableRow>
                ) : (
                   filteredPayments.map(pay => (
                      <TableRow key={pay.id}>
-                        <TableCell className="font-mono font-medium text-emerald-400">{pay.paymentCode || `PAY-${pay.id}`}</TableCell>
-                        <TableCell className="font-medium text-slate-200">{pay.studentName || 'N/A'}</TableCell>
-                        <TableCell className="font-mono text-slate-400">{pay.invoiceCode}</TableCell>
-                        <TableCell className="font-bold text-emerald-400">{formatVND(pay.paidAmount)}</TableCell>
+                        <TableCell className="font-mono font-medium text-emerald-600 dark:text-emerald-400">{pay.paymentCode || `PAY-${pay.id}`}</TableCell>
+                        <TableCell className="font-medium text-foreground">{pay.studentName || 'N/A'}</TableCell>
+                        <TableCell className="font-mono text-foreground-muted">{pay.invoiceCode}</TableCell>
+                        <TableCell className="font-bold text-emerald-600 dark:text-emerald-400">{formatVND(pay.paidAmount)}</TableCell>
                         <TableCell>
                            <Badge variant={pay.paymentMethod === 'CASH' ? 'warning' : 'info'}>{pay.paymentMethod === 'CASH' ? 'Tiền mặt' : 'Chuyển khoản'}</Badge>
                         </TableCell>
-                        <TableCell className="text-slate-400 text-sm">{formatDate(pay.paidAt)}</TableCell>
-                        <TableCell className="text-slate-400 text-sm max-w-[200px] truncate">{pay.note || '-'}</TableCell>
+                        <TableCell className="text-foreground-muted text-sm">{formatDate(pay.paidAt)}</TableCell>
+                        <TableCell className="text-foreground-muted text-sm max-w-[200px] truncate">{pay.note || '-'}</TableCell>
                      </TableRow>
                   ))
                )}
@@ -256,12 +256,12 @@ export const PaymentsView: React.FC = () => {
                </div>
 
                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Ghi chú</label>
-                  <textarea rows={2} {...register('note')} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500" />
+                  <label className="block text-sm font-medium text-foreground-secondary mb-1.5">Ghi chú</label>
+                  <textarea rows={2} {...register('note')} className="w-full bg-surface border border-border rounded-lg p-2 text-sm text-foreground focus:outline-none focus:border-brand-500 transition-colors" />
                </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
                <Button variant="secondary" type="button" onClick={() => setIsRecordOpen(false)}>Hủy bỏ</Button>
                <Button variant="primary" type="submit" isLoading={recordPaymentMutation.isPending}>Ghi nhận</Button>
             </div>

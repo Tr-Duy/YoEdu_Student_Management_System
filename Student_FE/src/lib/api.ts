@@ -52,8 +52,12 @@ api.interceptors.response.use(
         window.location.href = '/login?expired=true';
       }
     }
-    
-    return Promise.reject(new Error(errorMessage));
+
+    const err = new Error(errorMessage);
+    (err as any).status = error.response?.status;
+    (err as any).isConflict = error.response?.status === 409;
+    (err as any).errors = errData?.errors;
+    return Promise.reject(err);
   }
 );
 

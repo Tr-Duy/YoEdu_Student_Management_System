@@ -78,10 +78,10 @@ export const DashboardView: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Tổng quan</h2>
-          <p className="text-sm text-slate-400 mt-1">Kết quả tài chính, sĩ số lớp học và tiến độ đào tạo.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Tổng quan</h2>
+          <p className="text-sm text-foreground-muted mt-1">Kết quả tài chính, sĩ số lớp học và tiến độ đào tạo.</p>
         </div>
-        <div className="bg-slate-900 border border-slate-800 rounded-md px-3 py-1.5 text-sm font-medium text-slate-300">
+        <div className="bg-surface border border-border rounded-md px-3 py-1.5 text-sm font-medium text-foreground-secondary shadow-sm">
           Năm học 2026 - Học kỳ Hè
         </div>
       </div>
@@ -123,18 +123,18 @@ export const DashboardView: React.FC = () => {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-sm transition-colors">
           <div className="mb-4">
-            <h3 className="text-sm font-medium text-slate-100 flex items-center gap-2">
-              <TrendingUp size={16} className="text-brand-400" />
+            <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+              <TrendingUp size={16} className="text-brand-600 dark:text-brand-400" />
               Doanh thu theo tháng
             </h3>
           </div>
           <div className="h-72 w-full">
             {isMonthlyLoading ? (
-              <div className="h-full flex items-center justify-center text-sm text-slate-500">Đang tải...</div>
+              <div className="h-full flex items-center justify-center text-sm text-foreground-muted">Đang tải...</div>
             ) : chartMonthlyData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-sm text-slate-500">Chưa có dữ liệu</div>
+              <div className="h-full flex items-center justify-center text-sm text-foreground-muted">Chưa có dữ liệu</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartMonthlyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -148,12 +148,11 @@ export const DashboardView: React.FC = () => {
                       <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border" vertical={false} />
                   <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000000}M`} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '8px', fontSize: '13px' }}
-                    itemStyle={{ color: '#f8fafc' }}
+                    contentStyle={{ backgroundColor: 'var(--color-surface, #ffffff)', borderColor: '#cbd5e1', borderRadius: '8px', fontSize: '13px' }}
                     formatter={(value: any) => [formatVND(value), '']}
                   />
                   <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} iconType="circle" />
@@ -165,29 +164,27 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <div className="bg-surface border border-border rounded-xl p-5 shadow-sm transition-colors">
           <div className="mb-4">
-            <h3 className="text-sm font-medium text-slate-100 flex items-center gap-2">
-              <Award size={16} className="text-violet-400" />
+            <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Award size={16} className="text-violet-500 dark:text-violet-400" />
               Đóng góp theo lớp
             </h3>
           </div>
           <div className="h-72 w-full">
             {isCourseLoading ? (
-              <div className="h-full flex items-center justify-center text-sm text-slate-500">Đang tải...</div>
+              <div className="h-full flex items-center justify-center text-sm text-foreground-muted">Đang tải...</div>
             ) : chartCourseData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-sm text-slate-500">Chưa có dữ liệu</div>
+              <div className="h-full flex items-center justify-center text-sm text-foreground-muted">Chưa có dữ liệu</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartCourseData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border" vertical={false} />
                   <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v / 1000000}M`} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '8px', fontSize: '13px' }}
-                    itemStyle={{ color: '#f8fafc' }}
+                    contentStyle={{ backgroundColor: 'var(--color-surface, #ffffff)', borderColor: '#cbd5e1', borderRadius: '8px', fontSize: '13px' }}
                     formatter={(value: any) => [formatVND(value), '']}
-                    cursor={{ fill: '#334155', opacity: 0.2 }}
                   />
                   <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} iconType="circle" />
                   <Bar dataKey="Thực thu" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40}>
@@ -204,7 +201,7 @@ export const DashboardView: React.FC = () => {
 
       {/* Quick Actions */}
       <div>
-        <h3 className="text-sm font-medium text-slate-400 mb-3 uppercase tracking-wider">Truy cập nhanh</h3>
+        <h3 className="text-sm font-medium text-foreground-muted mb-3 uppercase tracking-wider">Truy cập nhanh</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <ActionCard title="Quản lý Học viên" desc="Tra cứu & đăng ký" path="/students" navigate={navigate} />
           <ActionCard title="Tài chính học phí" desc="Lập hóa đơn & đôn nợ" path="/billing" navigate={navigate} />
@@ -218,14 +215,14 @@ export const DashboardView: React.FC = () => {
 
 function StatCard({ title, value, subtitle, icon, danger = false }: any) {
   return (
-    <div className={`bg-slate-900 border ${danger ? 'border-rose-500/20' : 'border-slate-800'} rounded-xl p-4 flex flex-col justify-between h-28`}>
-      <div className="flex items-center justify-between text-slate-400">
+    <div className={`bg-surface border ${danger ? 'border-rose-500/30' : 'border-border'} rounded-xl p-4 flex flex-col justify-between h-28 shadow-sm transition-colors`}>
+      <div className="flex items-center justify-between text-foreground-muted">
         <span className="text-xs font-medium uppercase tracking-wider">{title}</span>
         {icon}
       </div>
       <div>
-        <div className={`text-2xl font-bold ${danger ? 'text-rose-400' : 'text-slate-100'} leading-none`}>{value}</div>
-        <div className="text-xs text-slate-500 mt-1">{subtitle}</div>
+        <div className={`text-2xl font-bold ${danger ? 'text-rose-600 dark:text-rose-400' : 'text-foreground'} leading-none`}>{value}</div>
+        <div className="text-xs text-foreground-muted mt-1">{subtitle}</div>
       </div>
     </div>
   );
@@ -235,13 +232,13 @@ function ActionCard({ title, desc, path, navigate }: any) {
   return (
     <button
       onClick={() => navigate(path)}
-      className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-xl transition-colors text-left group"
+      className="flex items-center justify-between p-4 bg-surface border border-border hover:border-brand-500/50 hover:bg-surface-hover rounded-xl transition-all text-left group shadow-sm"
     >
       <div>
-        <span className="text-sm font-medium text-slate-200 block">{title}</span>
-        <span className="text-xs text-slate-500 mt-0.5 block">{desc}</span>
+        <span className="text-sm font-medium text-foreground block">{title}</span>
+        <span className="text-xs text-foreground-muted mt-0.5 block">{desc}</span>
       </div>
-      <ChevronRight size={16} className="text-slate-600 group-hover:text-slate-300 transition-colors" />
+      <ChevronRight size={16} className="text-foreground-muted group-hover:text-brand-500 transition-colors" />
     </button>
   );
 }

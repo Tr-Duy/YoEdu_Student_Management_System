@@ -118,14 +118,19 @@ public class BillingServiceImpl implements BillingService {
     @Transactional
     @Override
     public PaymentResponse recordPayment(PaymentCreateRequest request, String receivedBy) {
-        TuitionInvoice invoice = tuitionInvoiceRepository.findById(request.getInvoiceId())
+        if (request.getPaidAmount() == null || request.getPaidAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Số tiền thanh toán phải lớn hơn 0");
+        }
+
+        TuitionInvoice invoice = tuitionInvoiceRepository.findByIdWithLock(request.getInvoiceId())
                 .orElseThrow(() -> new NotFoundExeception("Invoice not found: " + request.getInvoiceId()));
 
         if (invoice.getStatus() == InvoiceStatus.PAID) {
-            throw new BadRequestException("Invoice is already fully paid");
+            throw new BadRequestException("Hóa đơn đã được thanh toán đầy đủ");
         }
         if (request.getPaidAmount().compareTo(invoice.getBalanceAmount()) > 0) {
-            throw new BadRequestException("Payment amount exceeds remaining balance: " + invoice.getBalanceAmount());
+            throw new BadRequestException("Số tiền thanh toán (" + request.getPaidAmount()
+                    + ") vượt quá số dư cần thanh toán (" + invoice.getBalanceAmount() + ")");
         }
 
         BigDecimal newAmountPaid = invoice.getAmountPaid().add(request.getPaidAmount());
@@ -144,6 +149,15 @@ public class BillingServiceImpl implements BillingService {
         record.setPaymentMethod(request.getPaymentMethod());
         record.setPaidAt(request.getPaidAt());
         record.setNote(request.getNote());
+
+        if (receivedBy != null && !receivedBy.isBlank()) {
+            try {
+                Users cashier = authService.findActiveUserByUsername(receivedBy);
+                record.setCashierUser(cashier);
+            } catch (Exception ignored) {
+                // If user not found in session, keep null
+            }
+        }
 
         try {
             paymentRepository.save(record);

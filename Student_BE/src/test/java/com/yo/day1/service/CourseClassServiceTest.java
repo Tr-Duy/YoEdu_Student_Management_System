@@ -45,6 +45,9 @@ public class CourseClassServiceTest {
     @Mock
     private TeacherRepository teacherRepository;
 
+    @Mock
+    private ScheduleConflictService scheduleConflictService;
+
     @InjectMocks
     private CourseClassServiceImpl service;
 

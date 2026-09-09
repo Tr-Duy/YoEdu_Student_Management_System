@@ -143,23 +143,23 @@ export const TeachersView: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Quản lý Giáo viên</h2>
-          <p className="text-sm text-slate-400 mt-1">Danh sách đội ngũ giảng viên và trợ giảng.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Quản lý Giáo viên</h2>
+          <p className="text-sm text-foreground-muted mt-1">Danh sách đội ngũ giảng viên và trợ giảng.</p>
         </div>
         <Button onClick={handleCreateClick} className="gap-2">
           <Plus size={16} /> Thêm Giáo viên
         </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-surface border border-border p-4 rounded-xl shadow-sm transition-colors">
         <div className="relative w-full md:w-96">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm mã, tên, email hoặc SĐT..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 focus:border-brand-500 focus:outline-none"
+            className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-brand-500 focus:outline-none transition-colors"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
@@ -168,7 +168,7 @@ export const TeachersView: React.FC = () => {
               key={filter}
               onClick={() => { setStatusFilter(filter); setPage(0); }}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === filter ? 'bg-brand-500/10 text-brand-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                statusFilter === filter ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold' : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
               }`}
             >
               {filter === 'ALL' && 'Tất cả'}
@@ -179,7 +179,7 @@ export const TeachersView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm transition-colors">
         <Table>
           <TableHeader>
             <TableRow>
@@ -203,14 +203,14 @@ export const TeachersView: React.FC = () => {
             ) : (
               teachersList.map((teacher) => (
                 <TableRow key={teacher.id}>
-                  <TableCell className="font-mono text-brand-400 font-medium">{teacher.teacherCode}</TableCell>
+                  <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{teacher.teacherCode}</TableCell>
                   <TableCell>
-                    <div className="font-medium text-slate-200">{teacher.fullName}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{teacher.dateOfBirth}</div>
+                    <div className="font-medium text-foreground">{teacher.fullName}</div>
+                    <div className="text-xs text-foreground-muted mt-0.5">{teacher.dateOfBirth}</div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm text-slate-300 flex items-center gap-1.5"><Phone size={12}/>{teacher.phone}</div>
-                    <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5"><Mail size={12}/>{teacher.email}</div>
+                    <div className="text-sm text-foreground-secondary flex items-center gap-1.5"><Phone size={12}/>{teacher.phone}</div>
+                    <div className="text-xs text-foreground-muted flex items-center gap-1.5 mt-0.5"><Mail size={12}/>{teacher.email}</div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="info">
@@ -226,7 +226,7 @@ export const TeachersView: React.FC = () => {
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="sm" onClick={() => { setSelectedTeacher(teacher); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
                       <Button variant="ghost" size="sm" onClick={() => handleEditClick(teacher)}><Edit size={16}/></Button>
-                      <Button variant="ghost" size="sm" className="text-rose-400 hover:text-rose-300" onClick={() => { setSelectedTeacher(teacher); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
+                      <Button variant="ghost" size="sm" className="text-rose-600 dark:text-rose-400 hover:text-rose-500" onClick={() => { setSelectedTeacher(teacher); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -235,8 +235,8 @@ export const TeachersView: React.FC = () => {
           </TableBody>
         </Table>
         {!isLoading && totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
-            <span className="text-sm text-slate-500">Trang {page + 1} / {totalPages}</span>
+          <div className="p-4 border-t border-border flex justify-between items-center bg-surface-hover/30">
+            <span className="text-sm text-foreground-muted">Trang {page + 1} / {totalPages}</span>
             <div className="flex gap-2">
               <Button variant="secondary" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Trước</Button>
               <Button variant="secondary" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Sau</Button>
@@ -248,13 +248,13 @@ export const TeachersView: React.FC = () => {
       <Modal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} title="Chi tiết Giáo viên" maxWidth="2xl">
         {selectedTeacher && (
           <div className="space-y-6">
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/50 border border-slate-800">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-hover/50 border border-border">
               <div className="h-12 w-12 rounded-full bg-brand-600 flex items-center justify-center font-bold text-white text-xl">
                 {selectedTeacher.fullName.charAt(0)}
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-slate-100">{selectedTeacher.fullName}</h4>
-                <div className="text-sm text-slate-400 mt-1 flex gap-3">
+                <h4 className="text-lg font-semibold text-foreground">{selectedTeacher.fullName}</h4>
+                <div className="text-sm text-foreground-muted mt-1 flex gap-3">
                   <span>{selectedTeacher.teacherCode}</span>
                   <span>{selectedTeacher.teacherRole}</span>
                 </div>
@@ -263,27 +263,27 @@ export const TeachersView: React.FC = () => {
             
             <div className="grid grid-cols-2 gap-6 text-sm">
               <div className="space-y-3">
-                <h5 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Thông tin liên hệ</h5>
-                <div className="flex justify-between"><span className="text-slate-500">Ngày sinh:</span><span className="text-slate-200">{selectedTeacher.dateOfBirth}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">SĐT:</span><span className="text-slate-200">{selectedTeacher.phone}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Email:</span><span className="text-slate-200">{selectedTeacher.email}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Địa chỉ:</span><span className="text-slate-200">{selectedTeacher.address || 'N/A'}</span></div>
+                <h5 className="font-semibold text-foreground border-b border-border pb-2">Thông tin liên hệ</h5>
+                <div className="flex justify-between"><span className="text-foreground-muted">Ngày sinh:</span><span className="text-foreground">{selectedTeacher.dateOfBirth}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">SĐT:</span><span className="text-foreground">{selectedTeacher.phone}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Email:</span><span className="text-foreground">{selectedTeacher.email}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Địa chỉ:</span><span className="text-foreground">{selectedTeacher.address || 'N/A'}</span></div>
               </div>
               <div className="space-y-3">
-                <h5 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Hồ sơ công việc</h5>
-                <div className="flex justify-between"><span className="text-slate-500">Đơn vị:</span><span className="text-slate-200">{selectedTeacher.workUnit || 'N/A'}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Lương:</span><span className="text-slate-200 font-medium text-emerald-400">{formatVND(selectedTeacher.salary || 0)}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Số ca/tuần:</span><span className="text-slate-200">{selectedTeacher.weeklySlots || 0}</span></div>
+                <h5 className="font-semibold text-foreground border-b border-border pb-2">Hồ sơ công việc</h5>
+                <div className="flex justify-between"><span className="text-foreground-muted">Đơn vị:</span><span className="text-foreground">{selectedTeacher.workUnit || 'N/A'}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Lương:</span><span className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatVND(selectedTeacher.salary || 0)}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Số ca/tuần:</span><span className="text-foreground">{selectedTeacher.weeklySlots || 0}</span></div>
               </div>
             </div>
             {selectedTeacher.experience && (
                <div>
-                  <h5 className="font-semibold text-slate-300 border-b border-slate-800 pb-2 mb-2 text-sm">Kinh nghiệm & Thành tựu</h5>
-                  <p className="text-slate-400 text-sm whitespace-pre-wrap">{selectedTeacher.experience}</p>
-                  <p className="text-slate-400 text-sm mt-2 whitespace-pre-wrap">{selectedTeacher.achievement}</p>
+                  <h5 className="font-semibold text-foreground border-b border-border pb-2 mb-2 text-sm">Kinh nghiệm & Thành tựu</h5>
+                  <p className="text-foreground-secondary text-sm whitespace-pre-wrap">{selectedTeacher.experience}</p>
+                  <p className="text-foreground-secondary text-sm mt-2 whitespace-pre-wrap">{selectedTeacher.achievement}</p>
                </div>
             )}
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setIsDetailsOpen(false)}>Đóng</Button>
             </div>
           </div>
@@ -317,7 +317,7 @@ export const TeachersView: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="secondary" type="button" onClick={() => setIsUpsertOpen(false)}>Hủy</Button>
             <Button variant="primary" type="submit" isLoading={upsertMutation.isPending}>Lưu</Button>
           </div>

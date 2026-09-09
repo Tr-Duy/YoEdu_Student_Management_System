@@ -17,7 +17,6 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "teachers")
 @SQLDelete(sql = "UPDATE teachers SET deleted = true WHERE id = ?")
-@SQLRestriction("deleted = false")
 public class Teacher extends AuditableEntity {
 
     @Column(name = "deleted", nullable = false)
@@ -37,7 +36,7 @@ public class Teacher extends AuditableEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "teacher_role", nullable = false, length = 20)
-    private TeacherRole teacherRole;
+    private TeacherRole teacherRole = TeacherRole.TEACHER;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

@@ -122,42 +122,42 @@ export const ScheduleSlotsView: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Cấu hình Ca học (Schedule Slots)</h2>
-          <p className="text-sm text-slate-400 mt-1">Thiết lập các ca học cố định phục vụ xếp lịch dạy và học.</p>
+          <h2 className="text-2xl font-bold text-foreground">Cấu hình Ca học (Schedule Slots)</h2>
+          <p className="text-sm text-foreground-muted mt-1">Thiết lập các ca học cố định phục vụ xếp lịch dạy và học.</p>
         </div>
         <Button onClick={handleCreateClick} className="gap-2"><Plus size={16} /> Thêm Ca học</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-brand-500/10 text-brand-400 p-3 rounded-lg"><Clock size={20}/></div>
-            <div><div className="text-sm text-slate-400">Tổng số ca</div><div className="text-xl font-bold text-slate-200">{rawSlotsList.length}</div></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-brand-500/10 text-brand-600 dark:text-brand-400 p-3 rounded-lg"><Clock size={20}/></div>
+            <div><div className="text-sm text-foreground-muted">Tổng số ca</div><div className="text-xl font-bold text-foreground">{rawSlotsList.length}</div></div>
          </div>
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><Calendar size={20}/></div>
-            <div><div className="text-sm text-slate-400">Số ngày có lịch</div><div className="text-xl font-bold text-emerald-400">{activeWeekdaysCount}</div></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg"><Calendar size={20}/></div>
+            <div><div className="text-sm text-foreground-muted">Số ngày có lịch</div><div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{activeWeekdaysCount}</div></div>
          </div>
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-brand-500/10 text-brand-400 p-3 rounded-lg"><Layers size={20}/></div>
-            <div><div className="text-sm text-slate-400">Thời lượng chuẩn</div><div className="text-xl font-bold text-brand-400">90 - 120p</div></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-brand-500/10 text-brand-600 dark:text-brand-400 p-3 rounded-lg"><Layers size={20}/></div>
+            <div><div className="text-sm text-foreground-muted">Thời lượng chuẩn</div><div className="text-xl font-bold text-brand-600 dark:text-brand-400">90 - 120p</div></div>
          </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-surface border border-border p-4 rounded-xl">
         <div className="relative w-full md:w-96">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm mã ca hoặc ghi chú..." className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
+          <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm mã ca hoặc ghi chú..." className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder-foreground-muted focus:outline-none focus:border-brand-500" />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto">
            {['ALL', '2', '3', '4', '5', '6', '7', '8'].map(day => (
-              <button key={day} onClick={() => { setWeekdayFilter(day); setPage(0); }} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${weekdayFilter === day ? 'bg-brand-500/10 text-brand-400' : 'text-slate-400 hover:bg-slate-800'}`}>
+              <button key={day} onClick={() => { setWeekdayFilter(day); setPage(0); }} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${weekdayFilter === day ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold' : 'text-foreground-secondary hover:bg-surface-hover'}`}>
                  {day === 'ALL' ? 'Tất cả' : day === '8' ? 'CN' : `T${day}`}
               </button>
            ))}
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -170,25 +170,25 @@ export const ScheduleSlotsView: React.FC = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-               <TableRow><TableCell colSpan={5} className="text-center py-8 text-slate-500">Đang tải...</TableCell></TableRow>
+               <TableRow><TableCell colSpan={5} className="text-center py-8 text-foreground-muted">Đang tải...</TableCell></TableRow>
             ) : paginatedSlots.length === 0 ? (
                <TableRow><TableCell colSpan={5} className="py-8"><EmptyState title="Không có ca học" description="Không tìm thấy dữ liệu ca học." isSearch={!!debouncedSearch} /></TableCell></TableRow>
             ) : (
                paginatedSlots.map(slot => (
                   <TableRow key={slot.id}>
-                     <TableCell className="font-mono text-brand-400 font-medium">{slot.slotCode}</TableCell>
+                     <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{slot.slotCode}</TableCell>
                      <TableCell>
                         <Badge variant={slot.weekday === 8 ? 'danger' : 'success'}>{formatWeekday(slot.weekday)}</Badge>
                      </TableCell>
-                     <TableCell className="font-mono text-slate-200">
+                     <TableCell className="font-mono text-foreground">
                         {slot.startTime.substring(0, 5)} - {slot.endTime.substring(0, 5)}
                      </TableCell>
-                     <TableCell className="text-slate-400 max-w-xs truncate">{slot.note || '-'}</TableCell>
+                     <TableCell className="text-foreground-secondary max-w-xs truncate">{slot.note || '-'}</TableCell>
                      <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                            <Button size="sm" variant="ghost" onClick={() => { setSelectedSlot(slot); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
                            <Button size="sm" variant="ghost" onClick={() => handleEditClick(slot)}><Edit size={16}/></Button>
-                           <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => setConfirmDeleteId(slot.id)}><Trash2 size={16}/></Button>
+                           <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-400 hover:bg-red-500/10" onClick={() => setConfirmDeleteId(slot.id)}><Trash2 size={16}/></Button>
                         </div>
                      </TableCell>
                   </TableRow>
@@ -197,8 +197,8 @@ export const ScheduleSlotsView: React.FC = () => {
           </TableBody>
         </Table>
         {!isLoading && totalPages > 1 && (
-           <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
-              <span className="text-sm text-slate-500">Trang {page + 1} / {totalPages}</span>
+           <div className="p-4 border-t border-border flex justify-between items-center bg-surface-hover/30">
+              <span className="text-sm text-foreground-muted">Trang {page + 1} / {totalPages}</span>
               <div className="flex gap-2">
                  <Button variant="secondary" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Trước</Button>
                  <Button variant="secondary" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Sau</Button>
@@ -226,7 +226,7 @@ export const ScheduleSlotsView: React.FC = () => {
                </div>
                <Input label="Ghi chú" {...register('note')} />
             </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
                <Button variant="secondary" type="button" onClick={() => setIsUpsertOpen(false)}>Hủy bỏ</Button>
                <Button variant="primary" type="submit" isLoading={upsertMutation.isPending}>Lưu ca học</Button>
             </div>
@@ -236,14 +236,14 @@ export const ScheduleSlotsView: React.FC = () => {
       <Modal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} title="Chi tiết Ca học" maxWidth="md">
          {selectedSlot && (
             <div className="space-y-5">
-               <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3">
-                  <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">Mã ca học:</span> <Badge variant="neutral">{selectedSlot.slotCode}</Badge></div>
-                  <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">Ngày học:</span> <Badge variant={selectedSlot.weekday === 8 ? 'danger' : 'success'}>{formatWeekday(selectedSlot.weekday)}</Badge></div>
-                  <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">Khung giờ:</span> <span className="font-mono text-slate-100 font-bold">{selectedSlot.startTime.substring(0, 5)} - {selectedSlot.endTime.substring(0, 5)}</span></div>
+               <div className="bg-surface border border-border p-4 rounded-xl space-y-3">
+                  <div className="flex justify-between items-center"><span className="text-foreground-muted text-sm">Mã ca học:</span> <Badge variant="neutral">{selectedSlot.slotCode}</Badge></div>
+                  <div className="flex justify-between items-center"><span className="text-foreground-muted text-sm">Ngày học:</span> <Badge variant={selectedSlot.weekday === 8 ? 'danger' : 'success'}>{formatWeekday(selectedSlot.weekday)}</Badge></div>
+                  <div className="flex justify-between items-center"><span className="text-foreground-muted text-sm">Khung giờ:</span> <span className="font-mono text-foreground font-bold">{selectedSlot.startTime.substring(0, 5)} - {selectedSlot.endTime.substring(0, 5)}</span></div>
                </div>
-               <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                  <span className="text-slate-500 text-sm block mb-2">Ghi chú:</span>
-                  <p className="text-slate-300 text-sm leading-relaxed">{selectedSlot.note || 'Không có mô tả hoặc ghi chú phụ nào.'}</p>
+               <div className="bg-surface border border-border p-4 rounded-xl">
+                  <span className="text-foreground-muted text-sm block mb-2">Ghi chú:</span>
+                  <p className="text-foreground-secondary text-sm leading-relaxed">{selectedSlot.note || 'Không có mô tả hoặc ghi chú phụ nào.'}</p>
                </div>
                <div className="flex justify-end pt-2">
                   <Button variant="secondary" onClick={() => setIsDetailsOpen(false)}>Đóng</Button>

@@ -129,11 +129,11 @@ export const BillingView: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Quản lý Hóa đơn & Học phí</h2>
-          <p className="text-sm text-slate-400 mt-1">Tra cứu hóa đơn, lập hóa đơn đơn lẻ và rà soát công nợ.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Quản lý Hóa đơn & Học phí</h2>
+          <p className="text-sm text-foreground-muted mt-1">Tra cứu hóa đơn, lập hóa đơn đơn lẻ và rà soát công nợ.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant={showWarningsOnly ? 'primary' : 'secondary'} className={showWarningsOnly ? 'bg-amber-600 hover:bg-amber-500' : ''} onClick={() => setShowWarningsOnly(!showWarningsOnly)}>
+          <Button variant={showWarningsOnly ? 'primary' : 'secondary'} className={showWarningsOnly ? 'bg-amber-600 hover:bg-amber-500 text-white' : ''} onClick={() => setShowWarningsOnly(!showWarningsOnly)}>
             <AlertTriangle size={16} className="mr-2" /> Nợ Quá Hạn ({warningsData?.length || 0})
           </Button>
           <Button onClick={() => { setIsCreateOpen(true); setValue('studentId', filters.studentId); if (filters.classId) setValue('courseClassId', filters.classId); }}>
@@ -144,50 +144,50 @@ export const BillingView: React.FC = () => {
 
       {!showWarningsOnly && (
         <>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-center">
+          <div className="bg-surface border border-border rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-center shadow-sm transition-colors">
              <div className="relative w-full lg:w-64 shrink-0">
-               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-               <input type="text" value={filters.search} onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 0 }))} placeholder="Mã HĐ, tên HV..." className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500" />
+               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
+               <input type="text" value={filters.search} onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 0 }))} placeholder="Mã HĐ, tên HV..." className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:border-brand-500 transition-colors" />
              </div>
              <div className="flex items-center gap-2 overflow-x-auto w-full">
-                <select value={filters.studentId} onChange={(e) => setFilters(prev => ({ ...prev, studentId: e.target.value, page: 0 }))} className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500 min-w-[150px]">
+                <select value={filters.studentId} onChange={(e) => setFilters(prev => ({ ...prev, studentId: e.target.value, page: 0 }))} className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-500 min-w-[150px] transition-colors">
                    <option value="">-- Tất cả Học viên --</option>
                    {studentsData?.map(s => <option key={s.id} value={s.id}>{s.fullName}</option>)}
                 </select>
-                <select value={filters.classId} onChange={(e) => setFilters(prev => ({ ...prev, classId: e.target.value, page: 0 }))} className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500 min-w-[150px]">
+                <select value={filters.classId} onChange={(e) => setFilters(prev => ({ ...prev, classId: e.target.value, page: 0 }))} className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-500 min-w-[150px] transition-colors">
                    <option value="">-- Tất cả Lớp học --</option>
                    {classesData?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
-                <select value={filters.status} onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value, page: 0 }))} className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500 min-w-[150px]">
+                <select value={filters.status} onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value, page: 0 }))} className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-500 min-w-[150px] transition-colors">
                    <option value="">-- Trạng thái --</option>
                    <option value="UNPAID">Chưa thanh toán</option>
                    <option value="PAID">Đã thanh toán</option>
                    <option value="PARTIAL">Trả một phần</option>
                    <option value="OVERPAID">Đóng dư</option>
                 </select>
-                <input type="month" value={filters.month} onChange={(e) => setFilters(prev => ({ ...prev, month: e.target.value, page: 0 }))} className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500" />
+                <input type="month" value={filters.month} onChange={(e) => setFilters(prev => ({ ...prev, month: e.target.value, page: 0 }))} className="bg-surface border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-brand-500 transition-colors" />
                 <Button variant="ghost" onClick={() => setFilters({ page: 0, size: 10, search: '', studentId: '', classId: '', status: '', month: '' })}><RefreshCcw size={16}/></Button>
              </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-             <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-                <div className="bg-slate-800 text-slate-300 p-3 rounded-lg"><History size={20}/></div>
-                <div><div className="text-sm text-slate-400">Tổng hóa đơn</div><div className="text-xl font-bold text-slate-200">{totalInvoicesCount}</div></div>
+             <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm transition-colors">
+                <div className="bg-surface-hover text-foreground-secondary p-3 rounded-lg"><History size={20}/></div>
+                <div><div className="text-sm text-foreground-muted">Tổng hóa đơn</div><div className="text-xl font-bold text-foreground">{totalInvoicesCount}</div></div>
              </div>
-             <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-                <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><CheckCircle size={20}/></div>
-                <div><div className="text-sm text-slate-400">Đã hoàn thành</div><div className="text-xl font-bold text-emerald-400">{formatVND(totalPaid)}</div></div>
+             <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm transition-colors">
+                <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg"><CheckCircle size={20}/></div>
+                <div><div className="text-sm text-foreground-muted">Đã hoàn thành</div><div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{formatVND(totalPaid)}</div></div>
              </div>
-             <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-                <div className="bg-red-500/10 text-red-400 p-3 rounded-lg"><AlertTriangle size={20}/></div>
-                <div><div className="text-sm text-slate-400">Học phí còn nợ</div><div className="text-xl font-bold text-red-400">{formatVND(totalUnpaid)}</div></div>
+             <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm transition-colors">
+                <div className="bg-rose-500/10 text-rose-600 dark:text-rose-400 p-3 rounded-lg"><AlertTriangle size={20}/></div>
+                <div><div className="text-sm text-foreground-muted">Học phí còn nợ</div><div className="text-xl font-bold text-rose-600 dark:text-rose-400">{formatVND(totalUnpaid)}</div></div>
              </div>
           </div>
         </>
       )}
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm transition-colors">
         {showWarningsOnly ? (
            <Table>
              <TableHeader>
@@ -203,20 +203,20 @@ export const BillingView: React.FC = () => {
              </TableHeader>
              <TableBody>
                {isWarningsLoading ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-slate-500">Đang tải...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-foreground-muted">Đang tải...</TableCell></TableRow>
                ) : !warningsData || warningsData.length === 0 ? (
                   <TableRow><TableCell colSpan={7} className="py-8"><EmptyState title="Không có nợ quá hạn" description="Tuyệt vời! Không có hóa đơn nào quá hạn thanh toán." /></TableCell></TableRow>
                ) : (
                   warningsData.map(w => (
                      <TableRow key={w.invoiceId}>
-                        <TableCell className="font-mono text-brand-400 font-medium">{w.invoiceCode}</TableCell>
-                        <TableCell className="font-medium text-slate-200">{w.studentName}</TableCell>
-                        <TableCell className="text-slate-300">{w.className}</TableCell>
-                        <TableCell className="text-slate-400">{formatDate(w.dueDate)}</TableCell>
-                        <TableCell className="font-bold text-red-400">{formatVND(w.balanceAmount)}</TableCell>
+                        <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{w.invoiceCode}</TableCell>
+                        <TableCell className="font-medium text-foreground">{w.studentName}</TableCell>
+                        <TableCell className="text-foreground-secondary">{w.className}</TableCell>
+                        <TableCell className="text-foreground-muted">{formatDate(w.dueDate)}</TableCell>
+                        <TableCell className="font-bold text-rose-600 dark:text-rose-400">{formatVND(w.balanceAmount)}</TableCell>
                         <TableCell><Badge variant="danger">{w.daysOverdue} ngày</Badge></TableCell>
                         <TableCell className="text-right">
-                           <Button size="sm" variant="ghost" onClick={() => { /* load detail using invoiceId... for now just open detail */ setIsDetailsOpen(true); }}><Eye size={16}/></Button>
+                           <Button size="sm" variant="ghost" onClick={() => { setIsDetailsOpen(true); }}><Eye size={16}/></Button>
                         </TableCell>
                      </TableRow>
                   ))
@@ -242,22 +242,22 @@ export const BillingView: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {isInvoicesLoading ? (
-                     <TableRow><TableCell colSpan={10} className="text-center py-8 text-slate-500">Đang tải...</TableCell></TableRow>
+                     <TableRow><TableCell colSpan={10} className="text-center py-8 text-foreground-muted">Đang tải...</TableCell></TableRow>
                   ) : activeInvoicesList.length === 0 ? (
                      <TableRow><TableCell colSpan={10} className="py-8"><EmptyState title="Không có hóa đơn" description="Không tìm thấy hóa đơn phù hợp." isSearch={!!filters.search} /></TableCell></TableRow>
                   ) : (
                      activeInvoicesList.map(inv => (
                         <TableRow key={inv.id}>
-                           <TableCell className="font-mono text-brand-400 font-medium">{inv.invoiceCode}</TableCell>
-                           <TableCell className="font-medium text-slate-200">{inv.className}</TableCell>
-                           <TableCell className="text-slate-300">{formatMonth(inv.billingMonth)}</TableCell>
-                           <TableCell className="font-semibold text-slate-100">{formatVND(inv.finalAmount)}</TableCell>
+                           <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{inv.invoiceCode}</TableCell>
+                           <TableCell className="font-medium text-foreground">{inv.className}</TableCell>
+                           <TableCell className="text-foreground-secondary">{formatMonth(inv.billingMonth)}</TableCell>
+                           <TableCell className="font-semibold text-foreground">{formatVND(inv.finalAmount)}</TableCell>
                            <TableCell>
-                              {inv.promotionName ? <span className="text-xs bg-slate-800 text-brand-400 px-2 py-1 rounded-md border border-slate-700 flex items-center w-max gap-1"><Gift size={12}/>{inv.promotionName}</span> : '-'}
+                              {inv.promotionName ? <span className="text-xs bg-surface-hover text-brand-600 dark:text-brand-400 px-2 py-1 rounded-md border border-border flex items-center w-max gap-1"><Gift size={12}/>{inv.promotionName}</span> : '-'}
                            </TableCell>
-                           <TableCell className="font-semibold text-emerald-400">{formatVND(inv.amountPaid)}</TableCell>
-                           <TableCell className="font-semibold text-red-400">{formatVND(inv.balanceAmount)}</TableCell>
-                           <TableCell className="text-slate-400 text-xs">{formatDate(inv.dueDate)}</TableCell>
+                           <TableCell className="font-semibold text-emerald-600 dark:text-emerald-400">{formatVND(inv.amountPaid)}</TableCell>
+                           <TableCell className="font-semibold text-rose-600 dark:text-rose-400">{formatVND(inv.balanceAmount)}</TableCell>
+                           <TableCell className="text-foreground-muted text-xs">{formatDate(inv.dueDate)}</TableCell>
                            <TableCell>{getStatusBadge(inv.status)}</TableCell>
                            <TableCell className="text-right">
                               <Button size="sm" variant="ghost" onClick={() => { setSelectedInvoice(inv); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
@@ -268,8 +268,8 @@ export const BillingView: React.FC = () => {
                 </TableBody>
               </Table>
               {!isInvoicesLoading && totalPages > 1 && (
-                 <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
-                    <span className="text-sm text-slate-500">Trang {filters.page + 1} / {totalPages}</span>
+                 <div className="p-4 border-t border-border flex justify-between items-center bg-surface-hover/30">
+                    <span className="text-sm text-foreground-muted">Trang {filters.page + 1} / {totalPages}</span>
                     <div className="flex gap-2">
                        <Button variant="secondary" size="sm" disabled={filters.page === 0} onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}>Trước</Button>
                        <Button variant="secondary" size="sm" disabled={filters.page >= totalPages - 1} onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}>Sau</Button>
@@ -302,7 +302,7 @@ export const BillingView: React.FC = () => {
                   <Input label="Ghi chú" {...register('note')} />
                </div>
             </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
                <Button variant="secondary" type="button" onClick={() => setIsCreateOpen(false)}>Hủy</Button>
                <Button variant="primary" type="submit" isLoading={createInvoiceMutation.isPending}>Tạo hóa đơn</Button>
             </div>
@@ -312,44 +312,44 @@ export const BillingView: React.FC = () => {
       <Modal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} title="Chi tiết Hóa đơn" maxWidth="2xl">
          {selectedInvoice && (
             <div className="space-y-6">
-               <div className="flex justify-between items-start border-b border-slate-800 pb-4">
+               <div className="flex justify-between items-start border-b border-border pb-4">
                   <div>
                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-xl font-bold text-slate-100">Hóa đơn {selectedInvoice.invoiceCode}</h3>
+                        <h3 className="text-xl font-bold text-foreground">Hóa đơn {selectedInvoice.invoiceCode}</h3>
                         {getStatusBadge(selectedInvoice.status)}
                      </div>
-                     <p className="text-slate-400 text-sm">Học viên: <span className="font-medium text-slate-200">{selectedInvoice.studentName} ({selectedInvoice.studentCode})</span></p>
+                     <p className="text-foreground-muted text-sm">Học viên: <span className="font-medium text-foreground">{selectedInvoice.studentName} ({selectedInvoice.studentCode})</span></p>
                   </div>
                   <Button variant="secondary" size="sm" className="gap-2"><Download size={14}/> In hóa đơn</Button>
                </div>
                
                <div className="grid grid-cols-2 gap-6 text-sm">
                   <div className="space-y-3">
-                     <h4 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Thông tin thu phí</h4>
-                     <div className="flex justify-between"><span className="text-slate-500">Lớp học:</span> <span className="text-slate-200">{selectedInvoice.className}</span></div>
-                     <div className="flex justify-between"><span className="text-slate-500">Tháng đóng:</span> <span className="text-slate-200">{formatMonth(selectedInvoice.billingMonth)}</span></div>
-                     <div className="flex justify-between"><span className="text-slate-500">Ngày tạo:</span> <span className="text-slate-200">{formatDate(selectedInvoice.createdAt)}</span></div>
-                     <div className="flex justify-between"><span className="text-slate-500">Hạn nộp:</span> <span className="text-slate-200">{formatDate(selectedInvoice.dueDate)}</span></div>
+                     <h4 className="font-semibold text-foreground border-b border-border pb-2">Thông tin thu phí</h4>
+                     <div className="flex justify-between"><span className="text-foreground-muted">Lớp học:</span> <span className="text-foreground">{selectedInvoice.className}</span></div>
+                     <div className="flex justify-between"><span className="text-foreground-muted">Tháng đóng:</span> <span className="text-foreground">{formatMonth(selectedInvoice.billingMonth)}</span></div>
+                     <div className="flex justify-between"><span className="text-foreground-muted">Ngày tạo:</span> <span className="text-foreground">{formatDate(selectedInvoice.createdAt)}</span></div>
+                     <div className="flex justify-between"><span className="text-foreground-muted">Hạn nộp:</span> <span className="text-foreground">{formatDate(selectedInvoice.dueDate)}</span></div>
                   </div>
                   <div className="space-y-3">
-                     <h4 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Chi tiết số tiền</h4>
-                     <div className="flex justify-between"><span className="text-slate-500">Học phí gốc:</span> <span className="text-slate-200">{formatVND(selectedInvoice.originalAmount)}</span></div>
+                     <h4 className="font-semibold text-foreground border-b border-border pb-2">Chi tiết số tiền</h4>
+                     <div className="flex justify-between"><span className="text-foreground-muted">Học phí gốc:</span> <span className="text-foreground">{formatVND(selectedInvoice.originalAmount)}</span></div>
                      {selectedInvoice.discountAmount > 0 && (
-                        <div className="flex justify-between text-brand-400"><span className="text-brand-400/70">Khuyến mãi ({selectedInvoice.promotionName}):</span> <span>-{formatVND(selectedInvoice.discountAmount)}</span></div>
+                        <div className="flex justify-between text-brand-600 dark:text-brand-400"><span className="opacity-80">Khuyến mãi ({selectedInvoice.promotionName}):</span> <span>-{formatVND(selectedInvoice.discountAmount)}</span></div>
                      )}
-                     <div className="flex justify-between font-bold text-base border-t border-slate-800 pt-2"><span className="text-slate-300">Tổng phải thu:</span> <span className="text-slate-100">{formatVND(selectedInvoice.finalAmount)}</span></div>
-                     <div className="flex justify-between"><span className="text-slate-500">Đã thanh toán:</span> <span className="text-emerald-400 font-semibold">{formatVND(selectedInvoice.amountPaid)}</span></div>
-                     <div className="flex justify-between"><span className="text-slate-500">Còn nợ:</span> <span className="text-red-400 font-semibold">{formatVND(selectedInvoice.balanceAmount)}</span></div>
+                     <div className="flex justify-between font-bold text-base border-t border-border pt-2"><span className="text-foreground-secondary">Tổng phải thu:</span> <span className="text-foreground">{formatVND(selectedInvoice.finalAmount)}</span></div>
+                     <div className="flex justify-between"><span className="text-foreground-muted">Đã thanh toán:</span> <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatVND(selectedInvoice.amountPaid)}</span></div>
+                     <div className="flex justify-between"><span className="text-foreground-muted">Còn nợ:</span> <span className="text-rose-600 dark:text-rose-400 font-semibold">{formatVND(selectedInvoice.balanceAmount)}</span></div>
                   </div>
                </div>
                
                {selectedInvoice.note && (
-                  <div className="bg-slate-900 border border-slate-800 p-3 rounded-lg text-sm text-slate-300">
-                     <span className="text-slate-500 font-medium">Ghi chú:</span> {selectedInvoice.note}
+                  <div className="bg-surface-hover/50 border border-border p-3 rounded-lg text-sm text-foreground-secondary">
+                     <span className="text-foreground-muted font-medium">Ghi chú:</span> {selectedInvoice.note}
                   </div>
                )}
 
-               <div className="flex justify-end pt-4 border-t border-slate-800">
+               <div className="flex justify-end pt-4 border-t border-border">
                   <Button variant="secondary" onClick={() => setIsDetailsOpen(false)}>Đóng</Button>
                </div>
             </div>

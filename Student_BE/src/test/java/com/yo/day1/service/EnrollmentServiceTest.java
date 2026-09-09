@@ -8,6 +8,7 @@ import com.yo.day1.domain.entity.ScheduleSlot;
 import com.yo.day1.domain.entity.Student;
 import com.yo.day1.domain.enums.ClassStatus;
 import com.yo.day1.domain.enums.EnrollmentStatus;
+import com.yo.day1.domain.enums.StudentStatus;
 import com.yo.day1.dto.enrollment.EnrollmentCreateRequest;
 import com.yo.day1.dto.enrollment.EnrollmentResponse;
 import com.yo.day1.repository.CourseClassRepository;
@@ -42,6 +43,8 @@ public class EnrollmentServiceTest {
     private CourseClassService courseClassService;
     @Mock
     private ModelMapper mapper;
+    @Mock
+    private ScheduleConflictService scheduleConflictService;
 
     @InjectMocks
     private EnrollmentServiceImpl service;
@@ -62,12 +65,12 @@ public class EnrollmentServiceTest {
         
         Student student = new Student();
         student.setId(1L);
+        student.setStatus(StudentStatus.ACTIVE);
         
-        when(enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(1L, 1L, EnrollmentStatus.ACTIVE)).thenReturn(false);
         when(courseClassService.getCourseClass(1L)).thenReturn(courseClass);
-        when(enrollmentRepository.countByCourseClassIdAndStatus(1L, EnrollmentStatus.ACTIVE)).thenReturn(10L);
-        when(enrollmentRepository.hasScheduleConflict(1L, 1L, 1L)).thenReturn(false);
         when(studentService.getStudent(1L)).thenReturn(student);
+        when(enrollmentRepository.findByStudentIdAndCourseClassId(1L, 1L)).thenReturn(Optional.empty());
+        when(enrollmentRepository.countByCourseClassIdAndStatus(1L, EnrollmentStatus.ACTIVE)).thenReturn(10L);
         
         Enrollment saved = new Enrollment();
         saved.setId(1L);
@@ -90,7 +93,6 @@ public class EnrollmentServiceTest {
         courseClass.setId(1L);
         courseClass.setStatus(ClassStatus.CLOSED);
         
-        when(enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(1L, 1L, EnrollmentStatus.ACTIVE)).thenReturn(false);
         when(courseClassService.getCourseClass(1L)).thenReturn(courseClass);
         
         assertThatThrownBy(() -> service.create(request))

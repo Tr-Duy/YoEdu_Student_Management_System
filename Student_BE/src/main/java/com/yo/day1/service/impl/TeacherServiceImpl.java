@@ -1,5 +1,6 @@
 package com.yo.day1.service.impl;
 
+import com.yo.day1.common.exception.ConflictException;
 import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.Teacher;
 import com.yo.day1.domain.enums.TeacherRole;
@@ -7,6 +8,7 @@ import com.yo.day1.domain.enums.TeacherStatus;
 import com.yo.day1.domain.spec.TeacherSpec;
 import com.yo.day1.dto.teacher.TeacherResponse;
 import com.yo.day1.dto.teacher.TeacherUpsertRequest;
+import com.yo.day1.repository.CourseClassRepository;
 import com.yo.day1.repository.TeacherRepository;
 import com.yo.day1.service.TeacherService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import java.util.Optional;
 public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository teacherRepository;
+    private final CourseClassRepository courseClassRepository;
     private final ModelMapper mapper;
 
     @Override
@@ -37,6 +40,7 @@ public class TeacherServiceImpl implements TeacherService {
                 ? teacherRepository.findByIsActive(active)
                 : teacherRepository.findAll();
         return teachers.stream()
+                .filter(t -> !Boolean.TRUE.equals(t.getDeleted()))
                 .map(t -> mapper.map(t, TeacherResponse.class))
                 .toList();
     }
@@ -65,6 +69,9 @@ public class TeacherServiceImpl implements TeacherService {
     public void delete(Long id) {
         if (!teacherRepository.existsById(id)) {
             throw new NotFoundExeception("Teacher not found: " + id);
+        }
+        if (courseClassRepository != null && courseClassRepository.hasActiveClassesForTeacher(id)) {
+            throw new ConflictException("Không thể ngừng hoạt động giáo viên đang phụ trách lớp học đang mở hoặc đang diễn ra.");
         }
         teacherRepository.deleteById(id);
     }

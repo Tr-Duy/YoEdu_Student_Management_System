@@ -5,10 +5,6 @@ import com.yo.day1.domain.enums.ClassStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -26,27 +22,22 @@ public class CourseClass extends AuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
-    @NotFound(action = NotFoundAction.IGNORE)
     private Course course;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
-    @NotFound(action = NotFoundAction.IGNORE)
     private Room room;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_slot_id", nullable = false)
-    @NotFound(action = NotFoundAction.IGNORE)
     private ScheduleSlot scheduleSlot;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "main_teacher_id", nullable = false)
-    @NotFound(action = NotFoundAction.IGNORE)
     private Teacher mainTeacher;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assistant_teacher_id")
-    @NotFound(action = NotFoundAction.IGNORE)
     private Teacher assistantTeacher;
 
     @Column(name = "start_date", nullable = false)

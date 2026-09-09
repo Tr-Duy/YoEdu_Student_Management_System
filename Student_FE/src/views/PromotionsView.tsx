@@ -278,14 +278,14 @@ export const PromotionsView: React.FC = () => {
       </div>
 
       {/* Header Panel */}
-      <div className="glass rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-white/5">
+      <div className="bg-surface rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-border shadow-sm transition-colors">
         <div className="flex items-center gap-5">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-400 border border-brand-500/20 shadow-md">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 shadow-sm">
             <Percent size={28} />
           </div>
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-50 tracking-wide">Quản lý Khuyến mãi & Ưu đãi</h2>
-            <p className="text-slate-400 text-sm mt-1">
+            <h2 className="text-2xl font-bold text-foreground tracking-wide">Quản lý Khuyến mãi & Ưu đãi</h2>
+            <p className="text-foreground-muted text-sm mt-1">
               Thiết lập các chương trình ưu đãi, mã giảm giá học phí theo dạng phần trăm (%) hoặc số tiền cố định (VND).
             </p>
           </div>
@@ -293,7 +293,7 @@ export const PromotionsView: React.FC = () => {
 
         <button
           onClick={handleCreateClick}
-          className="flex items-center gap-2 rounded-2xl bg-brand-600 hover:bg-brand-500 hover:scale-[1.02] active:scale-95 text-white font-bold text-sm px-6 py-3.5 shadow-lg shadow-brand-500/25 transition-all cursor-pointer"
+          className="flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm px-5 py-2.5 shadow-sm transition-all cursor-pointer"
         >
           <Plus size={18} />
           <span>Thêm Mã ưu đãi</span>
@@ -302,41 +302,41 @@ export const PromotionsView: React.FC = () => {
 
       {/* Stats Cards Panel */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass rounded-2xl p-5 border border-white/5 flex items-center justify-between">
+        <div className="bg-surface rounded-xl p-5 border border-border flex items-center justify-between shadow-sm transition-colors">
           <div>
-            <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Tổng chương trình</span>
-            <h3 className="text-2xl font-black text-slate-100 mt-1">{promotionsList.length} chương trình</h3>
+            <span className="text-xs text-foreground-muted font-semibold uppercase tracking-wider">Tổng chương trình</span>
+            <h3 className="text-2xl font-bold text-foreground mt-1">{promotionsList.length} chương trình</h3>
           </div>
-          <div className="p-3.5 bg-slate-800/40 rounded-xl border border-white/5 text-brand-400">
+          <div className="p-3.5 bg-surface-hover rounded-xl border border-border text-brand-600 dark:text-brand-400">
             <Gift size={20} />
           </div>
         </div>
 
-        <div className="glass rounded-2xl p-5 border border-white/5 flex items-center justify-between">
+        <div className="bg-surface rounded-xl p-5 border border-border flex items-center justify-between shadow-sm transition-colors">
           <div>
-            <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Mã đang kích hoạt</span>
-            <h3 className="text-2xl font-black text-emerald-400 mt-1">{activePromoCount} chương trình</h3>
+            <span className="text-xs text-foreground-muted font-semibold uppercase tracking-wider">Mã đang kích hoạt</span>
+            <h3 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{activePromoCount} chương trình</h3>
           </div>
-          <div className="p-3.5 bg-slate-800/40 rounded-xl border border-white/5 text-emerald-400">
+          <div className="p-3.5 bg-surface-hover rounded-xl border border-border text-emerald-600 dark:text-emerald-400">
             <CheckCircle size={20} />
           </div>
         </div>
 
-        <div className="glass rounded-2xl p-5 border border-white/5 flex items-center justify-between">
+        <div className="bg-surface rounded-xl p-5 border border-border flex items-center justify-between shadow-sm transition-colors">
           <div>
-            <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Hình thức chiết khấu</span>
-            <h3 className="text-2xl font-black text-brand-300 mt-1">% / Cố định</h3>
+            <span className="text-xs text-foreground-muted font-semibold uppercase tracking-wider">Loại ưu đãi</span>
+            <h3 className="text-2xl font-bold text-foreground mt-1">Phần trăm & Tiền mặt</h3>
           </div>
-          <div className="p-3.5 bg-slate-800/40 rounded-xl border border-white/5 text-brand-300">
+          <div className="p-3.5 bg-surface-hover rounded-xl border border-border text-brand-600 dark:text-brand-400">
             <Coins size={20} />
           </div>
         </div>
       </div>
 
       {/* Filters & Search */}
-      <div className="glass rounded-2xl p-4 flex flex-col md:flex-row items-stretch md:items-center gap-4 justify-between border border-white/5">
+      <div className="bg-surface rounded-xl p-4 flex flex-col md:flex-row items-stretch md:items-center gap-4 justify-between border border-border shadow-sm transition-colors">
         <div className="relative flex-1 max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-foreground-muted">
             <Search size={18} />
           </div>
           <input
@@ -344,7 +344,7 @@ export const PromotionsView: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm theo mã KM hoặc tên chương trình..."
-            className="w-full bg-slate-900/40 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-all"
+            className="w-full bg-surface border border-border rounded-lg py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:border-brand-500 transition-colors"
           />
         </div>
 
@@ -356,10 +356,10 @@ export const PromotionsView: React.FC = () => {
                 setStatusFilter(filter);
                 setPage(0);
               }}
-              className={`rounded-xl px-4 py-2 text-xs font-bold border transition-all cursor-pointer ${
+              className={`rounded-lg px-3.5 py-2 text-xs font-semibold border transition-all cursor-pointer ${
                 statusFilter === filter
-                  ? 'bg-brand-500/10 text-brand-400 border-brand-500/30'
-                  : 'text-slate-400 border-transparent hover:bg-slate-800/40 hover:text-slate-200'
+                  ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400 border-brand-500/30 font-bold'
+                  : 'text-foreground-muted border-transparent hover:bg-surface-hover hover:text-foreground'
               }`}
             >
               {filter === 'ALL' && 'Tất cả'}
@@ -371,75 +371,75 @@ export const PromotionsView: React.FC = () => {
       </div>
 
       {/* Table Container */}
-      <div className="glass rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
+      <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-sm transition-colors">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-900/30 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                <th className="py-4 px-6">Mã Ưu đãi</th>
-                <th className="py-4 px-6">Tên Chương trình</th>
-                <th className="py-4 px-6">Hình thức</th>
-                <th className="py-4 px-6">Giá trị chiết khấu</th>
-                <th className="py-4 px-6">Thời hạn áp dụng</th>
-                <th className="py-4 px-6">Trạng thái</th>
-                <th className="py-4 px-6 text-center">Thao tác</th>
+              <tr className="border-b border-border bg-surface-hover/70 text-foreground-muted text-xs font-semibold uppercase tracking-wider">
+                <th className="py-3 px-4">Mã Ưu đãi</th>
+                <th className="py-3 px-4">Tên Chương trình</th>
+                <th className="py-3 px-4">Hình thức</th>
+                <th className="py-3 px-4">Giá trị chiết khấu</th>
+                <th className="py-3 px-4">Thời hạn áp dụng</th>
+                <th className="py-3 px-4">Trạng thái</th>
+                <th className="py-3 px-4 text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50 text-sm text-slate-300">
+            <tbody className="divide-y divide-border text-sm text-foreground-secondary">
               {isLoading && (
                 [...Array(pageSize)].map((_, idx) => (
                   <tr key={idx} className="animate-pulse">
-                    <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-16"></div></td>
-                    <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-44"></div></td>
-                    <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-20"></div></td>
-                    <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-24"></div></td>
-                    <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-36"></div></td>
-                    <td className="py-4.5 px-6"><div className="h-6 bg-slate-800 rounded-full w-24"></div></td>
-                    <td className="py-4.5 px-6"><div className="h-8 bg-slate-800 rounded w-24 mx-auto"></div></td>
+                    <td className="py-3 px-4"><div className="h-4 bg-surface-hover rounded w-16"></div></td>
+                    <td className="py-3 px-4"><div className="h-4 bg-surface-hover rounded w-44"></div></td>
+                    <td className="py-3 px-4"><div className="h-4 bg-surface-hover rounded w-20"></div></td>
+                    <td className="py-3 px-4"><div className="h-4 bg-surface-hover rounded w-24"></div></td>
+                    <td className="py-3 px-4"><div className="h-4 bg-surface-hover rounded w-36"></div></td>
+                    <td className="py-3 px-4"><div className="h-6 bg-surface-hover rounded-full w-24"></div></td>
+                    <td className="py-3 px-4"><div className="h-8 bg-surface-hover rounded w-24 mx-auto"></div></td>
                   </tr>
                 ))
               )}
 
               {!isLoading && paginatedPromotions.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-slate-500">
+                  <td colSpan={7} className="py-16 text-center text-foreground-muted">
                     Không tìm thấy chương trình ưu đãi nào.
                   </td>
                 </tr>
               )}
 
               {!isLoading && paginatedPromotions.map((promo) => (
-                <tr key={promo.id} className="hover:bg-slate-900/25 transition-all duration-150">
-                  <td className="py-4 px-6 font-mono font-bold text-brand-400 text-xs">
+                <tr key={promo.id} className="hover:bg-surface-hover/50 transition-colors">
+                  <td className="py-3 px-4 font-mono font-bold text-brand-600 dark:text-brand-400 text-xs">
                     {promo.promoCode}
                   </td>
-                  <td className="py-4 px-6 font-bold text-slate-100">
+                  <td className="py-3 px-4 font-semibold text-foreground">
                     {promo.name}
                   </td>
-                  <td className="py-4 px-6 font-medium text-slate-300">
+                  <td className="py-3 px-4 font-medium text-foreground-secondary">
                     {promo.discountType === 'PERCENTAGE' || promo.discountType === 'PERCENT' ? 'Theo Phần trăm (%)' : 'Số tiền cố định'}
                   </td>
-                  <td className="py-4 px-6 font-mono font-extrabold text-emerald-400">
+                  <td className="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">
                     {promo.discountType === 'PERCENTAGE' || promo.discountType === 'PERCENT'
                       ? `${promo.discountValue}%`
                       : formatVND(promo.discountValue)}
                   </td>
-                  <td className="py-4 px-6 text-slate-400">
+                  <td className="py-3 px-4 text-foreground-muted">
                     <span className="inline-flex items-center gap-1">
-                      <Calendar size={14} className="text-slate-500" />
+                      <Calendar size={14} className="text-foreground-muted" />
                       {formatDate(promo.startDate)} - {formatDate(promo.endDate)}
                     </span>
                   </td>
-                  <td className="py-4 px-6">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                  <td className="py-3 px-4">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       promo.isActive
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                     }`}>
                       {promo.isActive ? 'Đang áp dụng' : 'Tạm ngưng'}
                     </span>
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="py-3 px-4">
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => {
@@ -447,14 +447,14 @@ export const PromotionsView: React.FC = () => {
                           setIsDetailsOpen(true);
                         }}
                         title="Chi tiết"
-                        className="rounded-lg p-2 bg-slate-800/40 text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-all cursor-pointer"
+                        className="rounded-lg p-2 bg-surface-hover text-foreground-secondary hover:text-foreground border border-border transition-colors cursor-pointer"
                       >
                         <Eye size={15} />
                       </button>
                       <button
                         onClick={() => handleEditClick(promo)}
                         title="Sửa"
-                        className="rounded-lg p-2 bg-slate-800/40 text-slate-400 hover:text-brand-400 hover:bg-slate-800 transition-all cursor-pointer"
+                        className="rounded-lg p-2 bg-surface-hover text-foreground-secondary hover:text-brand-600 dark:hover:text-brand-400 border border-border transition-colors cursor-pointer"
                       >
                         <Edit size={15} />
                       </button>
@@ -464,7 +464,7 @@ export const PromotionsView: React.FC = () => {
                           setIsConfirmDeleteOpen(true);
                         }}
                         title="Xóa"
-                        className="rounded-lg p-2 bg-slate-800/40 text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-all cursor-pointer"
+                        className="rounded-lg p-2 bg-surface-hover text-foreground-secondary hover:text-red-500 border border-border transition-colors cursor-pointer"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -478,22 +478,22 @@ export const PromotionsView: React.FC = () => {
 
         {/* Pagination */}
         {!isLoading && totalPages > 1 && (
-          <div className="border-t border-slate-800/80 px-6 py-4 flex items-center justify-between bg-slate-900/15">
-            <span className="text-xs text-slate-500">
-              Trang <span className="font-bold text-slate-400">{page + 1}</span> / {totalPages}
+          <div className="border-t border-border px-6 py-4 flex items-center justify-between bg-surface-hover/30">
+            <span className="text-xs text-foreground-muted">
+              Trang <span className="font-semibold text-foreground">{page + 1}</span> / {totalPages}
             </span>
             <div className="flex items-center gap-2">
               <button
                 disabled={page === 0}
                 onClick={() => setPage(prev => Math.max(0, prev - 1))}
-                className="rounded-xl border border-slate-800 p-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800 disabled:opacity-30 transition-all cursor-pointer"
+                className="rounded-lg border border-border p-2 text-foreground-muted hover:text-foreground hover:bg-surface-hover disabled:opacity-30 transition-colors cursor-pointer"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 disabled={page >= totalPages - 1}
                 onClick={() => setPage(prev => prev + 1)}
-                className="rounded-xl border border-slate-800 p-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800 disabled:opacity-30 transition-all cursor-pointer"
+                className="rounded-lg border border-border p-2 text-foreground-muted hover:text-foreground hover:bg-surface-hover disabled:opacity-30 transition-colors cursor-pointer"
               >
                 <ChevronRight size={16} />
               </button>
@@ -506,34 +506,34 @@ export const PromotionsView: React.FC = () => {
           MODAL: VIEW DETAILS
           ========================================== */}
       {isDetailsOpen && selectedPromotion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-          <div className="glass rounded-3xl border border-white/10 w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden shadow-2xl animate-zoom-in">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800 bg-slate-900/30">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+          <div className="bg-surface rounded-xl border border-border w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden shadow-xl animate-zoom-in">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface-hover/50">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-xs font-black bg-brand-500/10 text-brand-400 border border-brand-500/20 px-2 py-1 rounded">
+                <span className="font-mono text-xs font-bold bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20 px-2 py-1 rounded">
                   {selectedPromotion.promoCode}
                 </span>
-                <h3 className="text-lg font-bold text-slate-50">Chi tiết Mã ưu đãi</h3>
+                <h3 className="text-base font-bold text-foreground">Chi tiết Mã ưu đãi</h3>
               </div>
               <button
                 onClick={() => setIsDetailsOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all cursor-pointer"
+                className="rounded-lg p-1.5 text-foreground-muted hover:bg-surface-hover hover:text-foreground transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
-              <div className="p-4.5 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="p-4 rounded-lg bg-surface-hover/40 border border-border space-y-3">
                 <div>
-                  <span className="text-slate-500 text-xs">Tên chương trình khuyến mãi</span>
-                  <h4 className="text-lg font-extrabold text-slate-100 mt-0.5">{selectedPromotion.name}</h4>
+                  <span className="text-foreground-muted text-xs">Tên chương trình khuyến mãi</span>
+                  <h4 className="text-base font-bold text-foreground mt-0.5">{selectedPromotion.name}</h4>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-slate-500 text-xs block">Hình thức</span>
-                    <span className="text-slate-200 font-bold mt-1 text-sm block">
+                    <span className="text-foreground-muted text-xs block">Hình thức</span>
+                    <span className="text-foreground font-semibold mt-1 text-sm block">
                       {selectedPromotion.discountType === 'PERCENTAGE' || selectedPromotion.discountType === 'PERCENT'
                         ? 'Giảm Phần trăm (%)'
                         : 'Giảm tiền mặt trực tiếp'}
@@ -541,8 +541,8 @@ export const PromotionsView: React.FC = () => {
                   </div>
 
                   <div>
-                    <span className="text-slate-500 text-xs block">Giá trị giảm giá</span>
-                    <span className="text-emerald-400 font-black text-lg block mt-0.5">
+                    <span className="text-foreground-muted text-xs block">Giá trị giảm giá</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold text-base block mt-0.5">
                       {selectedPromotion.discountType === 'PERCENTAGE' || selectedPromotion.discountType === 'PERCENT'
                         ? `${selectedPromotion.discountValue}%`
                         : formatVND(selectedPromotion.discountValue)}
@@ -551,21 +551,21 @@ export const PromotionsView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-4.5 rounded-2xl bg-slate-900/40 border border-white/5 space-y-3 text-sm">
+              <div className="p-4 rounded-lg bg-surface-hover/40 border border-border space-y-3 text-sm">
                 <div>
-                  <span className="text-slate-500 text-xs block">Hạn sử dụng</span>
-                  <span className="text-slate-200 font-medium flex items-center gap-1.5 mt-1">
-                    <Calendar size={15} className="text-slate-400" />
+                  <span className="text-foreground-muted text-xs block">Hạn sử dụng</span>
+                  <span className="text-foreground font-medium flex items-center gap-1.5 mt-1">
+                    <Calendar size={15} className="text-foreground-muted" />
                     Từ {formatDate(selectedPromotion.startDate)} đến {formatDate(selectedPromotion.endDate)}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-500 text-xs block">Trạng thái phát hành</span>
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold mt-1.5 ${
+                  <span className="text-foreground-muted text-xs block">Trạng thái phát hành</span>
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold mt-1.5 ${
                     selectedPromotion.isActive
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                      : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                      : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
                   }`}>
                     {selectedPromotion.isActive ? 'Đang kích hoạt áp dụng' : 'Đang tạm dừng / Ngưng áp dụng'}
                   </span>
@@ -574,18 +574,18 @@ export const PromotionsView: React.FC = () => {
 
               {selectedPromotion.note && (
                 <div>
-                  <span className="text-slate-500 text-xs block mb-1">Mô tả chi tiết áp dụng</span>
-                  <p className="text-slate-300 text-xs bg-slate-900/60 p-4 rounded-xl border border-slate-800 leading-relaxed font-medium">
+                  <span className="text-foreground-muted text-xs block mb-1">Mô tả chi tiết áp dụng</span>
+                  <p className="text-foreground-secondary text-xs bg-surface-hover/30 p-3 rounded-lg border border-border leading-relaxed font-medium">
                     {selectedPromotion.note}
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/30 flex justify-end">
+            <div className="px-6 py-3 border-t border-border bg-surface-hover/30 flex justify-end">
               <button
                 onClick={() => setIsDetailsOpen(false)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold px-5 py-2.5 transition-all cursor-pointer"
+                className="bg-surface border border-border hover:bg-surface-hover text-foreground-secondary rounded-lg text-xs font-medium px-4 py-2 transition-colors cursor-pointer"
               >
                 Đóng
               </button>
@@ -598,15 +598,15 @@ export const PromotionsView: React.FC = () => {
           MODAL: CREATE / UPDATE FORM
           ========================================== */}
       {isUpsertOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-          <div className="glass rounded-3xl border border-white/10 w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-zoom-in">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800 bg-slate-900/30">
-              <h3 className="text-lg font-bold text-slate-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+          <div className="bg-surface rounded-xl border border-border w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden shadow-xl animate-zoom-in">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface-hover/50">
+              <h3 className="text-base font-bold text-foreground">
                 {editingPromotionId ? 'Cập nhật Mã ưu đãi' : 'Thêm mới Mã ưu đãi'}
               </h3>
               <button
                 onClick={() => setIsUpsertOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all cursor-pointer"
+                className="rounded-lg p-1.5 text-foreground-muted hover:bg-surface-hover hover:text-foreground transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -614,39 +614,39 @@ export const PromotionsView: React.FC = () => {
 
             <form onSubmit={handleSubmit(onSubmitForm)} className="flex-1 overflow-y-auto p-6 space-y-4">
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-brand-400 uppercase tracking-wider pb-1.5 border-b border-slate-800 flex items-center gap-1.5">
+                <h4 className="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider pb-1.5 border-b border-border flex items-center gap-1.5">
                   <Sparkles size={14} />
                   Chi tiết chương trình ưu đãi
                 </h4>
 
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Mã ưu đãi (Promo Code) *</label>
+                  <label className="block text-xs text-foreground-muted mb-1.5 font-medium">Mã ưu đãi (Promo Code) *</label>
                   <input
                     type="text"
                     {...register('promoCode')}
                     placeholder="Ví dụ: HE2026, YOEDU10"
-                    className="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-brand-500 font-mono"
+                    className="w-full bg-surface border border-border rounded-lg py-2 px-3 text-sm text-foreground placeholder-foreground-muted focus:outline-none focus:border-brand-500 font-mono"
                   />
-                  {errors.promoCode && <p className="text-red-400 text-xs mt-1">{errors.promoCode.message}</p>}
+                  {errors.promoCode && <p className="text-red-500 text-xs mt-1">{errors.promoCode.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Tên chương trình *</label>
+                  <label className="block text-xs text-foreground-muted mb-1.5 font-medium">Tên chương trình *</label>
                   <input
                     type="text"
                     {...register('name')}
                     placeholder="Ví dụ: Giảm giá hè 10%, Ưu đãi đặc biệt..."
-                    className="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500"
+                    className="w-full bg-surface border border-border rounded-lg py-2 px-3 text-sm text-foreground focus:outline-none focus:border-brand-500"
                   />
-                  {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
+                  {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1.5 font-medium">Hình thức chiết khấu *</label>
+                    <label className="block text-xs text-foreground-muted mb-1.5 font-medium">Hình thức chiết khấu *</label>
                     <select
                       {...register('discountType')}
-                      className="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3.5 text-sm text-slate-200 focus:outline-none focus:border-brand-500"
+                      className="w-full bg-surface border border-border rounded-lg py-2 px-3 text-sm text-foreground focus:outline-none focus:border-brand-500"
                     >
                       <option value="PERCENTAGE">Theo Phần trăm (%)</option>
                       <option value="FIXED">Số tiền cố định (VND)</option>
@@ -654,7 +654,7 @@ export const PromotionsView: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1.5 font-medium">
+                    <label className="block text-xs text-foreground-muted mb-1.5 font-medium">
                       {watchDiscountType === 'PERCENTAGE' || watchDiscountType === 'PERCENT'
                         ? 'Giá trị giảm (%) *'
                         : 'Giá trị giảm (VND) *'}
@@ -662,42 +662,42 @@ export const PromotionsView: React.FC = () => {
                     <input
                       type="number"
                       {...register('discountValue')}
-                      className="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500 font-mono"
+                      className="w-full bg-surface border border-border rounded-lg py-2 px-3 text-sm text-foreground focus:outline-none focus:border-brand-500 font-mono"
                     />
-                    {errors.discountValue && <p className="text-red-400 text-xs mt-1">{errors.discountValue.message?.toString()}</p>}
+                    {errors.discountValue && <p className="text-red-500 text-xs mt-1">{errors.discountValue.message?.toString()}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1.5 font-medium">Ngày bắt đầu *</label>
+                    <label className="block text-xs text-foreground-muted mb-1.5 font-medium">Ngày bắt đầu *</label>
                     <input
                       type="date"
                       {...register('startDate')}
-                      className="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500"
+                      className="w-full bg-surface border border-border rounded-lg py-2 px-3 text-sm text-foreground focus:outline-none focus:border-brand-500"
                     />
-                    {errors.startDate && <p className="text-red-400 text-xs mt-1">{errors.startDate.message}</p>}
+                    {errors.startDate && <p className="text-red-500 text-xs mt-1">{errors.startDate.message}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1.5 font-medium">Ngày kết thúc *</label>
+                    <label className="block text-xs text-foreground-muted mb-1.5 font-medium">Ngày kết thúc *</label>
                     <input
                       type="date"
                       {...register('endDate')}
-                      className="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500"
+                      className="w-full bg-surface border border-border rounded-lg py-2 px-3 text-sm text-foreground focus:outline-none focus:border-brand-500"
                     />
-                    {errors.endDate && <p className="text-red-400 text-xs mt-1">{errors.endDate.message}</p>}
+                    {errors.endDate && <p className="text-red-500 text-xs mt-1">{errors.endDate.message}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Trạng thái *</label>
+                  <label className="block text-xs text-foreground-muted mb-1.5 font-medium">Trạng thái *</label>
                   <select
                     id="isActive"
                     {...register('isActive', {
                       setValueAs: (v) => v === 'true' || v === true
                     })}
-                    className="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500 cursor-pointer"
+                    className="w-full bg-surface border border-border rounded-lg py-2 px-3 text-sm text-foreground focus:outline-none focus:border-brand-500 cursor-pointer"
                   >
                     <option value="true">Đang hoạt động</option>
                     <option value="false">Tạm ngưng / Hết hạn</option>
@@ -705,28 +705,28 @@ export const PromotionsView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Điều kiện áp dụng & Ghi chú</label>
+                  <label className="block text-xs text-foreground-muted mb-1.5 font-medium">Điều kiện áp dụng & Ghi chú</label>
                   <textarea
                     rows={3}
                     {...register('note')}
                     placeholder="Mô tả chi tiết đối tượng áp dụng hoặc ghi chú chương trình..."
-                    className="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-3.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500 leading-relaxed"
+                    className="w-full bg-surface border border-border rounded-lg py-2 px-3 text-sm text-foreground focus:outline-none focus:border-brand-500 leading-relaxed"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-800/80">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setIsUpsertOpen(false)}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold px-5 py-3 transition-all cursor-pointer"
+                  className="bg-surface border border-border hover:bg-surface-hover text-foreground-secondary rounded-lg text-xs font-medium px-4 py-2 transition-colors cursor-pointer"
                 >
                   Hủy bỏ
                 </button>
                 <button
                   type="submit"
                   disabled={upsertMutation.isPending}
-                  className="bg-brand-600 hover:bg-brand-500 disabled:bg-brand-800 text-white rounded-xl text-xs font-bold px-6 py-3 transition-all cursor-pointer flex items-center gap-2"
+                  className="bg-brand-600 hover:bg-brand-500 disabled:bg-brand-800 text-white rounded-lg text-xs font-semibold px-5 py-2 transition-colors cursor-pointer flex items-center gap-2"
                 >
                   {upsertMutation.isPending ? (
                     <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
@@ -744,16 +744,16 @@ export const PromotionsView: React.FC = () => {
           MODAL: DELETE CONFIRMATION
           ========================================== */}
       {isConfirmDeleteOpen && selectedPromotion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-          <div className="glass rounded-3xl border border-white/10 w-full max-w-sm p-6 shadow-2xl animate-zoom-in text-center space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+          <div className="bg-surface rounded-xl border border-border w-full max-w-sm p-6 shadow-xl animate-zoom-in text-center space-y-4">
             <div className="h-12 w-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20 mx-auto">
               <Trash2 size={22} />
             </div>
             
             <div>
-              <h3 className="text-slate-100 font-extrabold text-base">Xóa chương trình ưu đãi</h3>
-              <p className="text-slate-400 text-xs mt-2 font-medium leading-relaxed">
-                Bạn có chắc chắn muốn xóa mã ưu đãi <span className="font-bold text-red-400">"{selectedPromotion.promoCode}"</span>? Các hóa đơn đang áp dụng mã này có thể bị ảnh hưởng.
+              <h3 className="text-foreground font-bold text-base">Xóa chương trình ưu đãi</h3>
+              <p className="text-foreground-muted text-xs mt-2 font-medium leading-relaxed">
+                Bạn có chắc chắn muốn xóa mã ưu đãi <span className="font-bold text-red-500">"{selectedPromotion.promoCode}"</span>? Các hóa đơn đang áp dụng mã này có thể bị ảnh hưởng.
               </p>
             </div>
 
@@ -761,7 +761,7 @@ export const PromotionsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsConfirmDeleteOpen(false)}
-                className="bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold px-4 py-2.5 transition-all cursor-pointer"
+                className="bg-surface border border-border hover:bg-surface-hover text-foreground-secondary rounded-lg text-xs font-medium px-4 py-2 transition-colors cursor-pointer"
               >
                 Hủy
               </button>
@@ -769,7 +769,7 @@ export const PromotionsView: React.FC = () => {
                 type="button"
                 disabled={deleteMutation.isPending}
                 onClick={() => deleteMutation.mutate(selectedPromotion.id)}
-                className="bg-red-600 hover:bg-red-500 disabled:bg-red-800 text-white rounded-xl text-xs font-bold px-5 py-2.5 transition-all cursor-pointer flex items-center gap-1.5"
+                className="bg-red-600 hover:bg-red-500 disabled:bg-red-800 text-white rounded-lg text-xs font-semibold px-4 py-2 transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 {deleteMutation.isPending ? (
                   <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>

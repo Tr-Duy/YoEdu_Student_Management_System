@@ -20,6 +20,7 @@ import {
   LogOut,
   X
 } from 'lucide-react';
+import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -39,7 +40,7 @@ interface MenuGroup {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
 
   const menuGroups: MenuGroup[] = [
@@ -96,23 +97,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       {/* Sidebar Panel */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-800 bg-slate-950 transition-transform duration-300 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-surface transition-transform duration-300 lg:static lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-slate-800">
+        <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-brand-600 font-bold text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-brand-600 font-bold text-white shadow-sm">
               YO
             </div>
-            <span className="text-lg font-bold tracking-wider text-slate-100">
+            <span className="text-lg font-bold tracking-wider text-foreground">
               YOEDU
             </span>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 lg:hidden"
+            className="rounded-lg p-1.5 text-foreground-muted hover:bg-surface-hover hover:text-foreground lg:hidden"
+            aria-label="Đóng menu"
           >
             <X size={18} />
           </button>
@@ -126,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
             return (
               <div key={index} className="space-y-1">
-                <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                <h3 className="px-3 text-xs font-semibold text-foreground-muted uppercase tracking-wider mb-2">
                   {group.title}
                 </h3>
                 {visibleItems.map(item => {
@@ -139,8 +141,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       onClick={onClose}
                       className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                         isActive
-                          ? 'bg-slate-800 text-brand-400 border-l-2 border-brand-500'
-                          : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'
+                          ? 'bg-surface-hover text-brand-600 dark:text-brand-400 border-l-2 border-brand-500 font-semibold'
+                          : 'text-foreground-secondary hover:bg-surface-hover hover:text-foreground border-l-2 border-transparent'
                       }`}
                     >
                       <Icon size={18} className="shrink-0" />
@@ -154,14 +156,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="border-t border-slate-800 p-4 shrink-0">
-          <button
-            onClick={() => logout()}
-            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
-          >
-            <LogOut size={18} />
-            <span>Đăng xuất</span>
-          </button>
+        <div className="border-t border-border p-3 shrink-0 bg-surface">
+          <ThemeSwitcher />
         </div>
       </aside>
     </>

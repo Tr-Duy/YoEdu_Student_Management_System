@@ -99,35 +99,35 @@ export const RoomsView: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Quản lý Phòng học</h2>
-          <p className="text-sm text-slate-400 mt-1">Cấu hình cơ sở vật chất phòng học và sức chứa tối đa.</p>
+          <h2 className="text-2xl font-bold text-foreground">Quản lý Phòng học</h2>
+          <p className="text-sm text-foreground-muted mt-1">Cấu hình cơ sở vật chất phòng học và sức chứa tối đa.</p>
         </div>
         <Button onClick={handleCreateClick} className="gap-2"><Plus size={16} /> Thêm Phòng học</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-brand-500/10 text-brand-400 p-3 rounded-lg"><DoorOpen size={20}/></div>
-            <div><div className="text-sm text-slate-400">Tổng số phòng</div><div className="text-xl font-bold text-slate-200">{roomsList.length}</div></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-brand-500/10 text-brand-600 dark:text-brand-400 p-3 rounded-lg"><DoorOpen size={20}/></div>
+            <div><div className="text-sm text-foreground-muted">Tổng số phòng</div><div className="text-xl font-bold text-foreground">{roomsList.length}</div></div>
          </div>
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><Users size={20}/></div>
-            <div><div className="text-sm text-slate-400">Sức chứa TB</div><div className="text-xl font-bold text-emerald-400">{avgCapacity}</div></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-3 rounded-lg"><Users size={20}/></div>
+            <div><div className="text-sm text-foreground-muted">Sức chứa TB</div><div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{avgCapacity}</div></div>
          </div>
-         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
-            <div className="bg-amber-500/10 text-amber-400 p-3 rounded-lg"><Users size={20}/></div>
-            <div><div className="text-sm text-slate-400">Sức chứa max</div><div className="text-xl font-bold text-amber-400">{maxCapacity}</div></div>
+         <div className="bg-surface border border-border rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-3 rounded-lg"><Users size={20}/></div>
+            <div><div className="text-sm text-foreground-muted">Sức chứa max</div><div className="text-xl font-bold text-amber-600 dark:text-amber-400">{maxCapacity}</div></div>
          </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-surface border border-border p-4 rounded-xl">
         <div className="relative w-full md:w-96">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm mã hoặc tên phòng..." className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
+          <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm mã hoặc tên phòng..." className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder-foreground-muted focus:outline-none focus:border-brand-500" />
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -140,23 +140,23 @@ export const RoomsView: React.FC = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-               <TableRow><TableCell colSpan={5} className="text-center py-8 text-slate-500">Đang tải...</TableCell></TableRow>
+               <TableRow><TableCell colSpan={5} className="text-center py-8 text-foreground-muted">Đang tải...</TableCell></TableRow>
             ) : paginatedRooms.length === 0 ? (
                <TableRow><TableCell colSpan={5} className="py-8"><EmptyState title="Không có phòng học" description="Không tìm thấy dữ liệu phòng học." isSearch={!!debouncedSearch} /></TableCell></TableRow>
             ) : (
                paginatedRooms.map(room => (
                   <TableRow key={room.id}>
-                     <TableCell className="font-mono text-brand-400 font-medium">{room.roomCode}</TableCell>
-                     <TableCell className="font-bold text-slate-200">{room.name}</TableCell>
+                     <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{room.roomCode}</TableCell>
+                     <TableCell className="font-semibold text-foreground">{room.name}</TableCell>
                      <TableCell>
                         <Badge variant={room.capacity >= 30 ? 'brand' : room.capacity >= 20 ? 'warning' : 'success'}>{room.capacity} học viên</Badge>
                      </TableCell>
-                     <TableCell className="text-slate-400 max-w-xs truncate">{room.description || '-'}</TableCell>
+                     <TableCell className="text-foreground-secondary max-w-xs truncate">{room.description || '-'}</TableCell>
                      <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                            <Button size="sm" variant="ghost" onClick={() => { setSelectedRoom(room); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
                            <Button size="sm" variant="ghost" onClick={() => handleEditClick(room)}><Edit size={16}/></Button>
-                           <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => setConfirmDeleteId(room.id)}><Trash2 size={16}/></Button>
+                           <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-400 hover:bg-red-500/10" onClick={() => setConfirmDeleteId(room.id)}><Trash2 size={16}/></Button>
                         </div>
                      </TableCell>
                   </TableRow>
@@ -165,8 +165,8 @@ export const RoomsView: React.FC = () => {
           </TableBody>
         </Table>
         {!isLoading && totalPages > 1 && (
-           <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
-              <span className="text-sm text-slate-500">Trang {page + 1} / {totalPages}</span>
+           <div className="p-4 border-t border-border flex justify-between items-center bg-surface-hover/30">
+              <span className="text-sm text-foreground-muted">Trang {page + 1} / {totalPages}</span>
               <div className="flex gap-2">
                  <Button variant="secondary" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Trước</Button>
                  <Button variant="secondary" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Sau</Button>
@@ -182,12 +182,12 @@ export const RoomsView: React.FC = () => {
                <Input label="Tên phòng *" {...register('name')} error={errors.name?.message as string} />
                <Input label="Sức chứa (học viên) *" type="number" {...register('capacity')} error={errors.capacity?.message as string} />
                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Mô tả thiết bị & Đặc điểm *</label>
-                  <textarea rows={4} {...register('description')} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-100 focus:outline-none focus:border-brand-500" />
-                  {errors.description && <p className="text-red-400 text-xs mt-1">{errors.description.message}</p>}
+                  <label className="block text-sm font-medium text-foreground-secondary mb-1.5">Mô tả thiết bị & Đặc điểm *</label>
+                  <textarea rows={4} {...register('description')} className="w-full bg-surface border border-border rounded-lg p-3 text-sm text-foreground placeholder-foreground-muted focus:outline-none focus:border-brand-500" />
+                  {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
                </div>
             </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
                <Button variant="secondary" type="button" onClick={() => setIsUpsertOpen(false)}>Hủy bỏ</Button>
                <Button variant="primary" type="submit" isLoading={upsertMutation.isPending}>Lưu phòng</Button>
             </div>
@@ -197,14 +197,14 @@ export const RoomsView: React.FC = () => {
       <Modal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} title="Chi tiết Phòng học" maxWidth="md">
          {selectedRoom && (
             <div className="space-y-5">
-               <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3">
-                  <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">Mã phòng:</span> <Badge variant="neutral">{selectedRoom.roomCode}</Badge></div>
-                  <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">Tên phòng:</span> <span className="font-bold text-slate-100">{selectedRoom.name}</span></div>
-                  <div className="flex justify-between items-center"><span className="text-slate-500 text-sm">Sức chứa tối đa:</span> <span className="font-bold text-emerald-400">{selectedRoom.capacity} học viên</span></div>
+               <div className="bg-surface border border-border p-4 rounded-xl space-y-3">
+                  <div className="flex justify-between items-center"><span className="text-foreground-muted text-sm">Mã phòng:</span> <Badge variant="neutral">{selectedRoom.roomCode}</Badge></div>
+                  <div className="flex justify-between items-center"><span className="text-foreground-muted text-sm">Tên phòng:</span> <span className="font-semibold text-foreground">{selectedRoom.name}</span></div>
+                  <div className="flex justify-between items-center"><span className="text-foreground-muted text-sm">Sức chứa tối đa:</span> <span className="font-semibold text-emerald-600 dark:text-emerald-400">{selectedRoom.capacity} học viên</span></div>
                </div>
-               <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                  <span className="text-slate-500 text-sm block mb-2">Đặc điểm / Trang thiết bị:</span>
-                  <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{selectedRoom.description}</p>
+               <div className="bg-surface border border-border p-4 rounded-xl">
+                  <span className="text-foreground-muted text-sm block mb-2">Đặc điểm / Trang thiết bị:</span>
+                  <p className="text-foreground-secondary text-sm leading-relaxed whitespace-pre-wrap">{selectedRoom.description}</p>
                </div>
                <div className="flex justify-end pt-2">
                   <Button variant="secondary" onClick={() => setIsDetailsOpen(false)}>Đóng</Button>

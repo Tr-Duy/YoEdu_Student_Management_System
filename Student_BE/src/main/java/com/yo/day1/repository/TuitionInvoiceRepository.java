@@ -50,4 +50,8 @@ public interface TuitionInvoiceRepository extends JpaRepository<TuitionInvoice, 
             ORDER BY SUM(i.amountPaid) DESC
             """)
     List<Object[]> revenueByClass(@Param("year") Integer year, @Param("month") Integer month);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT ti FROM TuitionInvoice ti WHERE ti.id = :id")
+    java.util.Optional<TuitionInvoice> findByIdWithLock(@Param("id") Long id);
 }

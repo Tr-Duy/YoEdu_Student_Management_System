@@ -165,23 +165,23 @@ export const ClassesView: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-100">Quản lý Lớp học</h2>
-          <p className="text-sm text-slate-400 mt-1">Lên lịch, sắp xếp phòng học và phân công giáo viên.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Quản lý Lớp học</h2>
+          <p className="text-sm text-foreground-muted mt-1">Lên lịch, sắp xếp phòng học và phân công giáo viên.</p>
         </div>
         <Button onClick={handleCreateClick} className="gap-2">
           <Plus size={16} /> Thêm Lớp học
         </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-surface border border-border p-4 rounded-xl shadow-sm transition-colors">
         <div className="relative w-full md:w-96">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm theo mã hoặc tên lớp..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 focus:border-brand-500 focus:outline-none"
+            className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-brand-500 focus:outline-none transition-colors"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
@@ -190,7 +190,7 @@ export const ClassesView: React.FC = () => {
               key={filter}
               onClick={() => { setStatusFilter(filter); setPage(0); }}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === filter ? 'bg-brand-500/10 text-brand-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                statusFilter === filter ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold' : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
               }`}
             >
               {filter === 'ALL' && 'Tất cả'}
@@ -203,7 +203,7 @@ export const ClassesView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm transition-colors">
         <Table>
           <TableHeader>
             <TableRow>
@@ -228,22 +228,33 @@ export const ClassesView: React.FC = () => {
             ) : (
               classesList.map((c) => (
                 <TableRow key={c.id}>
-                  <TableCell className="font-mono text-brand-400 font-medium">{c.classCode}</TableCell>
+                  <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{c.classCode}</TableCell>
                   <TableCell>
-                    <div className="font-medium text-slate-200">{c.name}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{c.course.name}</div>
+                    <div className="font-medium text-foreground">{c.name}</div>
+                    <div className="text-xs text-foreground-muted mt-0.5">{c.courseName || (c as any).course?.name || 'N/A'}</div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm text-slate-300 flex items-center gap-1.5"><Clock size={12}/>{c.scheduleSlot.dayOfWeek} ({c.scheduleSlot.startTime.slice(0,5)} - {c.scheduleSlot.endTime.slice(0,5)})</div>
-                    <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5"><DoorOpen size={12}/>Phòng: {c.room.name}</div>
+                    <div className="text-sm text-foreground-secondary flex items-center gap-1.5">
+                      <Clock size={12}/>
+                      {c.scheduleLabel || ((c as any).scheduleSlot ? `${(c as any).scheduleSlot.dayOfWeek} (${(c as any).scheduleSlot.startTime?.slice(0,5)} - ${(c as any).scheduleSlot.endTime?.slice(0,5)})` : 'Chưa xếp lịch')}
+                    </div>
+                    <div className="text-xs text-foreground-muted flex items-center gap-1.5 mt-0.5">
+                      <DoorOpen size={12}/>Phòng: {c.roomName || (c as any).room?.name || 'N/A'}
+                    </div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm text-slate-300 flex items-center gap-1.5"><UserCheck size={12}/>GV: {c.mainTeacher.fullName}</div>
-                    {c.assistantTeacher && <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5"><UserCheck size={12}/>TG: {c.assistantTeacher.fullName}</div>}
+                    <div className="text-sm text-foreground-secondary flex items-center gap-1.5">
+                      <UserCheck size={12}/>GV: {c.mainTeacherName || (c as any).mainTeacher?.fullName || 'Chưa gán'}
+                    </div>
+                    {(c.assistantTeacherName || (c as any).assistantTeacher) && (
+                      <div className="text-xs text-foreground-muted flex items-center gap-1.5 mt-0.5">
+                        <UserCheck size={12}/>TG: {c.assistantTeacherName || (c as any).assistantTeacher?.fullName}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm text-slate-300">{c.currentStudents} / {c.maxStudents}</div>
-                    <div className="text-xs text-emerald-400 mt-0.5">{formatVND(c.tuitionFee)}</div>
+                    <div className="text-sm text-foreground-secondary">{c.currentStudents} / {c.maxStudents}</div>
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{formatVND(c.tuitionFee)}</div>
                   </TableCell>
                   <TableCell>
                     <Badge variant={c.status === 'OPEN' ? 'success' : c.status === 'ONGOING' ? 'info' : c.status === 'FULL' ? 'warning' : 'danger'}>
@@ -254,7 +265,7 @@ export const ClassesView: React.FC = () => {
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="sm" onClick={() => { setSelectedClass(c); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
                       <Button variant="ghost" size="sm" onClick={() => handleEditClick(c)}><Edit size={16}/></Button>
-                      <Button variant="ghost" size="sm" className="text-rose-400 hover:text-rose-300" onClick={() => { setSelectedClass(c); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
+                      <Button variant="ghost" size="sm" className="text-rose-600 dark:text-rose-400 hover:text-rose-500" onClick={() => { setSelectedClass(c); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -263,8 +274,8 @@ export const ClassesView: React.FC = () => {
           </TableBody>
         </Table>
         {!isLoading && totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
-            <span className="text-sm text-slate-500">Trang {page + 1} / {totalPages}</span>
+          <div className="p-4 border-t border-border flex justify-between items-center bg-surface-hover/30">
+            <span className="text-sm text-foreground-muted">Trang {page + 1} / {totalPages}</span>
             <div className="flex gap-2">
               <Button variant="secondary" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Trước</Button>
               <Button variant="secondary" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Sau</Button>
@@ -276,37 +287,49 @@ export const ClassesView: React.FC = () => {
       <Modal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} title="Chi tiết Lớp học" maxWidth="2xl">
         {selectedClass && (
           <div className="space-y-6">
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/50 border border-slate-800">
-              <div className="h-12 w-12 rounded-lg bg-brand-600/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-bold text-xl">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-hover/50 border border-border">
+              <div className="h-12 w-12 rounded-lg bg-brand-600/15 text-brand-600 dark:text-brand-400 border border-brand-500/25 flex items-center justify-center font-bold text-xl">
                 <School size={24} />
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-slate-100">{selectedClass.name}</h4>
-                <div className="text-sm text-slate-400 mt-1 flex gap-3">
+                <h4 className="text-lg font-semibold text-foreground">{selectedClass.name}</h4>
+                <div className="text-sm text-foreground-muted mt-1 flex gap-3">
                   <span>Mã: {selectedClass.classCode}</span>
-                  <span>Khóa học: {selectedClass.course.name}</span>
+                  <span>Khóa học: {selectedClass.courseName || (selectedClass as any).course?.name || 'N/A'}</span>
                 </div>
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-6 text-sm">
               <div className="space-y-3">
-                <h5 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Thời gian & Địa điểm</h5>
-                <div className="flex justify-between"><span className="text-slate-500">Lịch học:</span><span className="text-slate-200">{selectedClass.scheduleSlot.dayOfWeek} ({selectedClass.scheduleSlot.startTime.slice(0,5)} - {selectedClass.scheduleSlot.endTime.slice(0,5)})</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Phòng:</span><span className="text-slate-200">{selectedClass.room.name} (Tầng {selectedClass.room.floor})</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Khởi giảng:</span><span className="text-slate-200">{selectedClass.startDate}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Kết thúc:</span><span className="text-slate-200">{selectedClass.endDate}</span></div>
+                <h5 className="font-semibold text-foreground border-b border-border pb-2">Thời gian & Địa điểm</h5>
+                <div className="flex justify-between">
+                  <span className="text-foreground-muted">Lịch học:</span>
+                  <span className="text-foreground">{selectedClass.scheduleLabel || ((selectedClass as any).scheduleSlot ? `${(selectedClass as any).scheduleSlot.dayOfWeek} (${(selectedClass as any).scheduleSlot.startTime?.slice(0,5)} - ${(selectedClass as any).scheduleSlot.endTime?.slice(0,5)})` : 'Chưa xếp lịch')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-foreground-muted">Phòng:</span>
+                  <span className="text-foreground">{selectedClass.roomName || (selectedClass as any).room?.name || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Khởi giảng:</span><span className="text-foreground">{selectedClass.startDate}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Kết thúc:</span><span className="text-foreground">{selectedClass.endDate}</span></div>
               </div>
               <div className="space-y-3">
-                <h5 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Học vụ & Phân công</h5>
-                <div className="flex justify-between"><span className="text-slate-500">GV Chính:</span><span className="text-slate-200">{selectedClass.mainTeacher.fullName}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Trợ giảng:</span><span className="text-slate-200">{selectedClass.assistantTeacher?.fullName || 'Không có'}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Sĩ số:</span><span className="text-slate-200">{selectedClass.currentStudents} / {selectedClass.maxStudents}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Học phí:</span><span className="text-emerald-400 font-medium">{formatVND(selectedClass.tuitionFee)}</span></div>
+                <h5 className="font-semibold text-foreground border-b border-border pb-2">Học vụ & Phân công</h5>
+                <div className="flex justify-between">
+                  <span className="text-foreground-muted">GV Chính:</span>
+                  <span className="text-foreground">{selectedClass.mainTeacherName || (selectedClass as any).mainTeacher?.fullName || 'Chưa gán'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-foreground-muted">Trợ giảng:</span>
+                  <span className="text-foreground">{selectedClass.assistantTeacherName || (selectedClass as any).assistantTeacher?.fullName || 'Không có'}</span>
+                </div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Sĩ số:</span><span className="text-foreground">{selectedClass.currentStudents || 0} / {selectedClass.maxStudents}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Học phí:</span><span className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatVND(selectedClass.tuitionFee)}</span></div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setIsDetailsOpen(false)}>Đóng</Button>
             </div>
           </div>
@@ -351,7 +374,7 @@ export const ClassesView: React.FC = () => {
             <Input label="Học phí lớp (VND)" type="number" {...register('tuitionFee')} error={errors.tuitionFee?.message as string} />
           </div>
           
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="secondary" type="button" onClick={() => setIsUpsertOpen(false)}>Hủy</Button>
             <Button variant="primary" type="submit" isLoading={upsertMutation.isPending}>Lưu</Button>
           </div>

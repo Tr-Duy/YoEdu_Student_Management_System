@@ -15,7 +15,7 @@ export const Modal: React.FC<ModalProps> = ({
   onClose, 
   title, 
   description, 
-  children,
+  children, 
   maxWidth = 'md' 
 }) => {
   useEffect(() => {
@@ -42,21 +42,22 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-fade-in">
       <div 
-        className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       
-      <div className={`relative w-full ${maxWidthClasses[maxWidth]} bg-slate-900 border border-slate-800 rounded-2xl shadow-xl flex flex-col max-h-[calc(100vh-2rem)]`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 shrink-0">
+      <div className={`relative w-full ${maxWidthClasses[maxWidth]} bg-surface border border-border rounded-2xl shadow-2xl flex flex-col max-h-[calc(100vh-2rem)] transition-colors animate-zoom-in`}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">{title}</h2>
-            {description && <p className="text-sm text-slate-400 mt-1">{description}</p>}
+            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+            {description && <p className="text-sm text-foreground-muted mt-1">{description}</p>}
           </div>
           <button 
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-100 hover:bg-slate-800 p-1.5 rounded-lg transition-colors"
+            aria-label="Đóng"
+            className="text-foreground-muted hover:text-foreground hover:bg-surface-hover p-1.5 rounded-lg transition-colors"
           >
             <X size={20} />
           </button>
@@ -69,3 +70,5 @@ export const Modal: React.FC<ModalProps> = ({
     </div>
   );
 };
+
+export default Modal;

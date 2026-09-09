@@ -8,6 +8,7 @@ import com.yo.day1.domain.entity.Enrollment;
 import com.yo.day1.domain.entity.Student;
 import com.yo.day1.domain.enums.ClassStatus;
 import com.yo.day1.domain.enums.EnrollmentStatus;
+import com.yo.day1.domain.enums.StudentStatus;
 import com.yo.day1.dto.enrollment.EnrollmentCreateRequest;
 import com.yo.day1.dto.enrollment.EnrollmentResponse;
 import com.yo.day1.dto.enrollment.TransferRequest;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,39 +41,67 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Transactional
     @Override
     public EnrollmentResponse create(EnrollmentCreateRequest request) throws BadRequestException, NotFoundExeception {
-        if (enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(
-                request.getStudentId(), request.getCourseClassId(), EnrollmentStatus.ACTIVE)) {
-            throw new ConflictException("Học viên đã đăng ký lớp này.");
-        }
-
-        CourseClass courseClass = courseClassService.getCourseClass(request.getCourseClassId());
+        // Concurrency-safe: lock the course class row
+        CourseClass courseClass = (courseClassRepository != null)
+                ? courseClassRepository.findByIdWithLock(request.getCourseClassId())
+                    .or(() -> courseClassRepository.findById(request.getCourseClassId()))
+                    .orElseGet(() -> courseClassService.getCourseClass(request.getCourseClassId()))
+                : courseClassService.getCourseClass(request.getCourseClassId());
 
         if (courseClass.getStatus() == ClassStatus.CLOSED) {
             throw new BadRequestException("Lớp học đã đóng, không thể đăng ký");
         }
         if (courseClass.getStatus() == ClassStatus.FULL) {
-            throw new BadRequestException("Lớp học đã đầy, không thể đăng ký");
+            throw new ConflictException("Lớp học đã đầy, không thể đăng ký");
+        }
+
+        Student student = studentService.getStudent(request.getStudentId());
+        if (student.getStatus() == StudentStatus.DROPPED) {
+            throw new BadRequestException("Học viên đã thôi học toàn trường, không thể đăng ký lớp mới.");
+        }
+
+        Optional<Enrollment> existingOpt = enrollmentRepository.findByStudentIdAndCourseClassId(
+                request.getStudentId(), request.getCourseClassId());
+
+        if (existingOpt.isPresent() && existingOpt.get().getStatus() == EnrollmentStatus.ACTIVE) {
+            throw new ConflictException("Học viên đã đăng ký và đang học tại lớp này.");
         }
 
         long activeCount = enrollmentRepository.countByCourseClassIdAndStatus(
                 request.getCourseClassId(), EnrollmentStatus.ACTIVE);
         if (activeCount >= courseClass.getMaxStudents()) {
-            throw new ConflictException("Không thể đăng ký: lớp đã đủ số lượng học viên.");
+            throw new ConflictException(String.format("Không thể đăng ký: lớp %s đã đủ sĩ số tối đa (%d học viên).",
+                    courseClass.getClassCode(), courseClass.getMaxStudents()));
         }
 
         String conflictMsg = scheduleConflictService.getStudentConflictMessage(
-                request.getStudentId(), courseClass.getScheduleSlot(), null);
+                request.getStudentId(),
+                courseClass.getScheduleSlot(),
+                courseClass.getStartDate(),
+                courseClass.getEndDate(),
+                null);
         if (conflictMsg != null) {
             throw new ConflictException("Không thể đăng ký: " + conflictMsg);
         }
 
-        Student student = studentService.getStudent(request.getStudentId());
-        Enrollment enrollment = new Enrollment();
-        enrollment.setStudent(student);
-        enrollment.setCourseClass(courseClass);
-        enrollment.setEnrolledAt(request.getEnrolledAt());
-        enrollment.setStatus(request.getStatus());
-        enrollment.setNote(request.getNote());
+        Enrollment enrollment;
+        if (existingOpt.isPresent()) {
+            // Re-enrollment of a previously DROPPED or COMPLETED record
+            enrollment = existingOpt.get();
+            enrollment.setStatus(EnrollmentStatus.ACTIVE);
+            enrollment.setEnrolledAt(request.getEnrolledAt() != null ? request.getEnrolledAt() : LocalDate.now());
+            if (request.getNote() != null) {
+                enrollment.setNote(request.getNote());
+            }
+        } else {
+            enrollment = new Enrollment();
+            enrollment.setStudent(student);
+            enrollment.setCourseClass(courseClass);
+            enrollment.setEnrolledAt(request.getEnrolledAt() != null ? request.getEnrolledAt() : LocalDate.now());
+            enrollment.setStatus(request.getStatus() != null ? request.getStatus() : EnrollmentStatus.ACTIVE);
+            enrollment.setNote(request.getNote());
+        }
+
         Enrollment saved = enrollmentRepository.save(enrollment);
 
         long newActiveCount = enrollmentRepository.countByCourseClassIdAndStatus(
@@ -135,7 +165,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new BadRequestException("Học viên không đang học tại lớp nguồn");
         }
 
-        CourseClass toClass = courseClassService.getCourseClass(request.toClassId());
+        // Lock target class for safe concurrency
+        CourseClass toClass = (courseClassRepository != null)
+                ? courseClassRepository.findByIdWithLock(request.toClassId())
+                    .or(() -> courseClassRepository.findById(request.toClassId()))
+                    .orElseGet(() -> courseClassService.getCourseClass(request.toClassId()))
+                : courseClassService.getCourseClass(request.toClassId());
+
+        if (toClass == null) {
+            throw new NotFoundExeception("Lớp đích không tồn tại");
+        }
 
         if (toClass.getStatus() == ClassStatus.CLOSED) {
             throw new BadRequestException("Lớp đích đã đóng");
@@ -143,13 +182,27 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (toClass.getStatus() == ClassStatus.FULL) {
             throw new ConflictException("Lớp đích đã đầy");
         }
-        if (enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(
-                request.studentId(), request.toClassId(), EnrollmentStatus.ACTIVE)) {
-            throw new ConflictException("Học viên đã đăng ký lớp đích");
+
+        Optional<Enrollment> existingToOpt = enrollmentRepository.findByStudentIdAndCourseClassId(
+                request.studentId(), request.toClassId());
+
+        if (existingToOpt.isPresent() && existingToOpt.get().getStatus() == EnrollmentStatus.ACTIVE) {
+            throw new ConflictException("Học viên đã đăng ký và đang học tại lớp đích");
+        }
+
+        long activeCount = enrollmentRepository.countByCourseClassIdAndStatus(
+                request.toClassId(), EnrollmentStatus.ACTIVE);
+        if (activeCount >= toClass.getMaxStudents()) {
+            throw new ConflictException(String.format("Lớp đích %s đã đủ sĩ số tối đa (%d học viên)",
+                    toClass.getClassCode(), toClass.getMaxStudents()));
         }
 
         String conflictMsg = scheduleConflictService.getStudentConflictMessage(
-                request.studentId(), toClass.getScheduleSlot(), request.fromClassId());
+                request.studentId(),
+                toClass.getScheduleSlot(),
+                toClass.getStartDate(),
+                toClass.getEndDate(),
+                request.fromClassId());
         if (conflictMsg != null) {
             throw new ConflictException("Lớp đích trùng lịch: " + conflictMsg);
         }
@@ -165,18 +218,27 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             courseClassRepository.save(fromClass);
         }
 
-        Enrollment newEnrollment = new Enrollment();
-        newEnrollment.setStudent(current.getStudent());
-        newEnrollment.setCourseClass(toClass);
-        newEnrollment.setStatus(EnrollmentStatus.ACTIVE);
-        newEnrollment.setEnrolledAt(request.effectiveDate() != null ? request.effectiveDate() : LocalDate.now());
-        newEnrollment.setNote("Chuyển từ lớp " + fromClass.getClassCode()
-                + (request.reason() != null ? " - " + request.reason() : ""));
-        Enrollment saved = enrollmentRepository.save(newEnrollment);
+        Enrollment targetEnrollment;
+        if (existingToOpt.isPresent()) {
+            targetEnrollment = existingToOpt.get();
+            targetEnrollment.setStatus(EnrollmentStatus.ACTIVE);
+            targetEnrollment.setEnrolledAt(request.effectiveDate() != null ? request.effectiveDate() : LocalDate.now());
+            targetEnrollment.setNote("Chuyển từ lớp " + fromClass.getClassCode()
+                    + (request.reason() != null ? " - " + request.reason() : ""));
+        } else {
+            targetEnrollment = new Enrollment();
+            targetEnrollment.setStudent(current.getStudent());
+            targetEnrollment.setCourseClass(toClass);
+            targetEnrollment.setStatus(EnrollmentStatus.ACTIVE);
+            targetEnrollment.setEnrolledAt(request.effectiveDate() != null ? request.effectiveDate() : LocalDate.now());
+            targetEnrollment.setNote("Chuyển từ lớp " + fromClass.getClassCode()
+                    + (request.reason() != null ? " - " + request.reason() : ""));
+        }
+        Enrollment saved = enrollmentRepository.save(targetEnrollment);
 
-        long activeCount = enrollmentRepository.countByCourseClassIdAndStatus(
+        long newActiveCount = enrollmentRepository.countByCourseClassIdAndStatus(
                 request.toClassId(), EnrollmentStatus.ACTIVE);
-        if (activeCount >= toClass.getMaxStudents()) {
+        if (newActiveCount >= toClass.getMaxStudents()) {
             toClass.setStatus(ClassStatus.FULL);
             courseClassRepository.save(toClass);
         }
