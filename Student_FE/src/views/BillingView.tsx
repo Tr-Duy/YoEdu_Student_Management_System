@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Eye, Receipt, AlertTriangle, History, Search, RefreshCcw, Gift, Download } from 'lucide-react';
+import { Plus, Eye, Receipt, AlertTriangle, History, Search, RefreshCcw, Gift, Download, CheckCircle } from 'lucide-react';
 import { billingApi } from '../features/billing/billing.api';
 import { studentsApi } from '../features/students/students.api';
 import { classesApi } from '../features/classes/classes.api';
