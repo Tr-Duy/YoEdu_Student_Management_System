@@ -1,13 +1,16 @@
 package com.yo.day1.service.impl;
 
+import com.yo.day1.common.exception.ConflictException;
 import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.CourseClass;
+import com.yo.day1.domain.entity.ScheduleSlot;
 import com.yo.day1.domain.enums.ClassStatus;
 import com.yo.day1.domain.spec.CourseClassSpec;
 import com.yo.day1.dto.courseclass.CourseClassCreateRequest;
 import com.yo.day1.dto.courseclass.CourseClassResponse;
 import com.yo.day1.repository.*;
 import com.yo.day1.service.CourseClassService;
+import com.yo.day1.service.ScheduleConflictService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +28,7 @@ public class CourseClassServiceImpl implements CourseClassService {
     private final RoomRepository roomRepository;
     private final ScheduleSlotRepository scheduleSlotRepository;
     private final TeacherRepository teacherRepository;
+    private final ScheduleConflictService scheduleConflictService;
 
     @Transactional(readOnly = true)
     @Override
@@ -67,6 +71,7 @@ public class CourseClassServiceImpl implements CourseClassService {
     public CourseClassResponse create(CourseClassCreateRequest request) {
         CourseClass courseClass = new CourseClass();
         apply(courseClass, request);
+        validateScheduleConflicts(courseClass, null);
         return toResponse(courseClassRepository.save(courseClass));
     }
 
@@ -75,6 +80,7 @@ public class CourseClassServiceImpl implements CourseClassService {
     public CourseClassResponse update(Long id, CourseClassCreateRequest request) {
         CourseClass courseClass = getCourseClass(id);
         apply(courseClass, request);
+        validateScheduleConflicts(courseClass, id);
         return toResponse(courseClassRepository.save(courseClass));
     }
 
@@ -113,6 +119,33 @@ public class CourseClassServiceImpl implements CourseClassService {
         c.setMaxStudents(r.maxStudents());
         c.setTuitionFee(r.tuitionFee());
         c.setStatus(r.status());
+    }
+
+    private void validateScheduleConflicts(CourseClass c, Long excludeClassId) {
+        ScheduleSlot slot = c.getScheduleSlot();
+        if (slot == null) return;
+        
+        String roomConflict = scheduleConflictService.getRoomConflictMessage(c.getRoom().getId(), slot, excludeClassId);
+        if (roomConflict != null) {
+            throw new ConflictException("Không thể lưu lớp: " + roomConflict);
+        }
+        
+        if (c.getMainTeacher() != null) {
+            String mainTeacherConflict = scheduleConflictService.getTeacherConflictMessage(c.getMainTeacher().getId(), slot, excludeClassId);
+            if (mainTeacherConflict != null) {
+                throw new ConflictException("Không thể lưu lớp: " + mainTeacherConflict);
+            }
+        }
+        
+        if (c.getAssistantTeacher() != null) {
+            if (c.getMainTeacher() != null && c.getMainTeacher().getId().equals(c.getAssistantTeacher().getId())) {
+                throw new ConflictException("Giáo viên chính và trợ giảng không được trùng nhau.");
+            }
+            String asstTeacherConflict = scheduleConflictService.getTeacherConflictMessage(c.getAssistantTeacher().getId(), slot, excludeClassId);
+            if (asstTeacherConflict != null) {
+                throw new ConflictException("Không thể lưu lớp (Trợ giảng): " + asstTeacherConflict);
+            }
+        }
     }
 
     private CourseClassResponse toResponse(CourseClass c) {

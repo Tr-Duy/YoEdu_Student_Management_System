@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../context/AuthContext';
 import { Lock, User, AlertCircle } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Tên đăng nhập không được để trống'),
@@ -36,7 +38,6 @@ export const LoginView: React.FC = () => {
     setLoading(true);
     try {
       await login(data);
-      // Redirect based on role after successful login
       const storedUser = localStorage.getItem('currentUser');
       if (storedUser) {
         const userObj = JSON.parse(storedUser);
@@ -78,12 +79,12 @@ export const LoginView: React.FC = () => {
     <div className="relative min-h-screen flex items-center justify-center bg-slate-950 overflow-hidden px-4">
       {/* Background Gradients */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[400px] h-[400px] bg-brand-400/10 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div className="w-full max-w-md z-10">
         {/* Logo and Brand */}
         <div className="flex flex-col items-center mb-8">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 font-extrabold text-2xl text-white shadow-xl shadow-brand-500/35 mb-4 animate-bounce">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 font-extrabold text-2xl text-white shadow-xl shadow-brand-500/30 mb-4">
             YO
           </div>
           <h2 className="text-3xl font-extrabold text-slate-50 tracking-wide">
@@ -95,7 +96,7 @@ export const LoginView: React.FC = () => {
         </div>
 
         {/* Login Card */}
-        <div className="glass rounded-3xl p-8 shadow-2xl border border-white/10">
+        <div className="bg-slate-900/80 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/5">
           <h3 className="text-xl font-bold text-slate-100 mb-6">Đăng nhập tài khoản</h3>
 
           {error && (
@@ -113,60 +114,32 @@ export const LoginView: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {/* Username Input */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Tên đăng nhập
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <User size={18} />
-                </div>
-                <input
-                  type="text"
-                  {...register('username')}
-                  placeholder="Nhập tên đăng nhập"
-                  className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl py-3 pl-10 pr-4 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all text-sm"
-                />
-              </div>
-              {errors.username && (
-                <p className="text-red-400 text-xs mt-1.5 pl-1">{errors.username.message}</p>
-              )}
+              <Input
+                label="Tên đăng nhập"
+                placeholder="Nhập tên đăng nhập"
+                {...register('username')}
+                error={errors.username?.message as string}
+              />
+            </div>
+            <div>
+              <Input
+                type="password"
+                label="Mật khẩu"
+                placeholder="Nhập mật khẩu"
+                {...register('password')}
+                error={errors.password?.message as string}
+              />
             </div>
 
-            {/* Password Input */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-                Mật khẩu
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock size={18} />
-                </div>
-                <input
-                  type="password"
-                  {...register('password')}
-                  placeholder="Nhập mật khẩu"
-                  className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl py-3 pl-10 pr-4 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all text-sm"
-                />
-              </div>
-              {errors.password && (
-                <p className="text-red-400 text-xs mt-1.5 pl-1">{errors.password.message}</p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full mt-2 bg-brand-600 hover:bg-brand-500 disabled:bg-brand-800 text-white rounded-xl py-3 text-sm font-semibold shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              variant="primary"
+              className="w-full mt-2 justify-center py-3"
+              isLoading={loading}
             >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                'Đăng nhập'
-              )}
-            </button>
+              Đăng nhập
+            </Button>
           </form>
 
           {/* Quick Demo Autofills */}

@@ -3,31 +3,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import {
-  Plus,
-  Eye,
-  X,
-  Receipt,
-  AlertCircle,
-  CheckCircle,
-  Sparkles,
-  ChevronDown,
-  Gift,
-  AlertTriangle,
-  History,
-  Search,
-  Filter,
-  RefreshCcw,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
+import { Plus, Eye, Receipt, AlertTriangle, History, Search, RefreshCcw, Gift, Download } from 'lucide-react';
 import { billingApi } from '../features/billing/billing.api';
 import { studentsApi } from '../features/students/students.api';
 import { classesApi } from '../features/classes/classes.api';
 import { promotionsApi } from '../features/promotions/promotions.api';
 import type { InvoiceResponse } from '../types/yoedu';
 
-// Zod validation for single invoice creation
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { Badge } from '../components/ui/Badge';
+import { Modal } from '../components/ui/Modal';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
+import { EmptyState } from '../components/ui/EmptyState';
+
 const invoiceFormSchema = z.object({
   studentId: z.string().min(1, 'Học viên là bắt buộc'),
   courseClassId: z.string().min(1, 'Lớp học là bắt buộc'),
@@ -40,911 +30,331 @@ const invoiceFormSchema = z.object({
 
 type InvoiceFormValues = z.infer<typeof invoiceFormSchema>;
 
-interface Toast {
-  id: number;
-  message: string;
-  type: 'success' | 'error';
-}
-
 export const BillingView: React.FC = () => {
   const queryClient = useQueryClient();
 
-  // Search & Filter States
-  const [filters, setFilters] = useState({
-    page: 0,
-    size: 10,
-    search: '',
-    studentId: '',
-    classId: '',
-    status: '',
-    month: ''
-  });
+  const [filters, setFilters] = useState({ page: 0, size: 10, search: '', studentId: '', classId: '', status: '', month: '' });
   const [showWarningsOnly, setShowWarningsOnly] = useState(false);
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  // Modals States
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceResponse | null>(null);
 
-  // Add Toast helper
-  const addToast = (message: string, type: 'success' | 'error') => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
-  };
+  const { data: studentsData } = useQuery({ queryKey: ['students-list'], queryFn: async () => (await studentsApi.search({ size: 1000 })).content });
+  const { data: classesData } = useQuery({ queryKey: ['classes-list'], queryFn: async () => (await classesApi.search({ size: 1000 })).content });
+  const { data: promotionsData } = useQuery({ queryKey: ['promotions-list'], queryFn: async () => promotionsApi.getAll() });
 
-  // ----------------------------------------------------
-  // DATA FETCHING (React Query)
-  // ----------------------------------------------------
-  // 1. Fetch Students (for dropdown lists)
-  const { data: studentsData } = useQuery({
-    queryKey: ['students-list'],
-    queryFn: async () => {
-      const res = await studentsApi.search({ size: 1000 });
-      return res.content;
-    }
-  });
-
-  // 2. Fetch Course Classes (for dropdown lists)
-  const { data: classesData } = useQuery({
-    queryKey: ['classes-list'],
-    queryFn: async () => {
-      const res = await classesApi.search({ size: 1000 });
-      return res.content;
-    }
-  });
-
-  // 3. Fetch Promotions (for dropdown lists)
-  const { data: promotionsData } = useQuery({
-    queryKey: ['promotions-list'],
-    queryFn: async () => promotionsApi.getAll()
-  });
-
-  // 4. Fetch Global Invoices
   const { data: invoicesData, isLoading: isInvoicesLoading } = useQuery({
     queryKey: ['invoices-search', filters],
-    queryFn: async () => {
-      return billingApi.searchInvoices({
-        page: filters.page,
-        size: filters.size,
-        search: filters.search || undefined,
-        studentId: filters.studentId ? Number(filters.studentId) : undefined,
-        classId: filters.classId ? Number(filters.classId) : undefined,
-        status: filters.status || undefined,
-        month: filters.month || undefined
-      });
-    }
+    queryFn: async () => billingApi.searchInvoices({
+      page: filters.page, size: filters.size, search: filters.search || undefined,
+      studentId: filters.studentId ? Number(filters.studentId) : undefined,
+      classId: filters.classId ? Number(filters.classId) : undefined,
+      status: filters.status || undefined, month: filters.month || undefined
+    })
   });
 
-  // 5. Fetch Global Invoice Stats
   const { data: statsData } = useQuery({
     queryKey: ['invoices-stats', filters],
-    queryFn: async () => {
-      return billingApi.getInvoiceStats({
-        search: filters.search || undefined,
-        studentId: filters.studentId ? Number(filters.studentId) : undefined,
-        classId: filters.classId ? Number(filters.classId) : undefined,
-        status: filters.status || undefined,
-        month: filters.month || undefined
-      });
-    }
+    queryFn: async () => billingApi.getInvoiceStats({
+      search: filters.search || undefined, studentId: filters.studentId ? Number(filters.studentId) : undefined,
+      classId: filters.classId ? Number(filters.classId) : undefined,
+      status: filters.status || undefined, month: filters.month || undefined
+    })
   });
 
-  // 6. Fetch Overdue Warnings
   const { data: warningsData, isLoading: isWarningsLoading } = useQuery({
     queryKey: ['overdue-warnings'],
     queryFn: async () => billingApi.getOverdueWarnings(),
     enabled: showWarningsOnly
   });
 
-  // ----------------------------------------------------
-  // MUTATIONS (React Query)
-  // ----------------------------------------------------
   const createInvoiceMutation = useMutation({
     mutationFn: async (values: InvoiceFormValues) => {
-      // billingMonth must be formatted as YYYY-MM-01
-      const formattedMonth = `${values.monthInput}-01`;
-
-      const payload = {
+      return billingApi.createInvoice({
         studentId: Number(values.studentId),
         courseClassId: Number(values.courseClassId),
-        billingMonth: formattedMonth,
+        billingMonth: `${values.monthInput}-01`,
         originalAmount: Number(values.originalAmount),
         promotionId: values.promotionId ? Number(values.promotionId) : null,
-        dueDate: values.dueDate ? values.dueDate : undefined,
-        note: values.note || ''
-      };
-
-      return billingApi.createInvoice(payload);
+        dueDate: values.dueDate || undefined, note: values.note || ''
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices-search'] });
       queryClient.invalidateQueries({ queryKey: ['invoices-stats'] });
       queryClient.invalidateQueries({ queryKey: ['overdue-warnings'] });
-      addToast('Tạo hóa đơn học phí thành công!', 'success');
       setIsCreateOpen(false);
       reset();
-    },
-    onError: (err: any) => {
-      addToast(err?.message || 'Không thể tạo hóa đơn học phí.', 'error');
     }
   });
 
-  // ----------------------------------------------------
-  // REACT HOOK FORM SETUP
-  // ----------------------------------------------------
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    reset,
-    formState: { errors }
-  } = useForm<InvoiceFormValues>({
+  const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
-    defaultValues: {
-      studentId: '',
-      courseClassId: '',
-      monthInput: new Date().toISOString().slice(0, 7), // YYYY-MM
-      promotionId: '',
-      originalAmount: '0',
-      dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      note: ''
-    }
+    defaultValues: { studentId: '', courseClassId: '', monthInput: new Date().toISOString().slice(0, 7), promotionId: '', originalAmount: '0', dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], note: '' }
   });
 
   const watchClassId = watch('courseClassId');
-
-  // Pre-fill amount when class changes
   useEffect(() => {
     if (watchClassId && classesData) {
       const selectedClass = classesData.find(c => c.id === Number(watchClassId));
-      if (selectedClass) {
-        setValue('originalAmount', selectedClass.tuitionFee.toString());
-      }
+      if (selectedClass) setValue('originalAmount', selectedClass.tuitionFee.toString());
     }
   }, [watchClassId, classesData, setValue]);
 
-  const onSubmitForm = (values: InvoiceFormValues) => {
-    createInvoiceMutation.mutate(values);
-  };
+  const onSubmitForm = (values: InvoiceFormValues) => createInvoiceMutation.mutate(values);
 
-  // ----------------------------------------------------
-  // HELPERS
-  // ----------------------------------------------------
-  const formatVND = (value: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '';
-    const parts = dateStr.split('-');
-    if (parts.length === 3) {
-      return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-    return dateStr;
-  };
-
-  const formatMonth = (dateStr?: string) => {
-    if (!dateStr) return '';
-    const parts = dateStr.split('-');
-    if (parts.length >= 2) {
-      return `Tháng ${parts[1]}/${parts[0]}`;
-    }
-    return dateStr;
-  };
+  const formatVND = (value: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  const formatDate = (dateStr?: string) => dateStr ? dateStr.split('-').reverse().join('/') : '';
+  const formatMonth = (dateStr?: string) => dateStr ? `Tháng ${dateStr.split('-')[1]}/${dateStr.split('-')[0]}` : '';
 
   const getStatusBadge = (status?: string) => {
     let cleanStatus = status || 'UNPAID';
     if (cleanStatus === 'PARTIALLY_PAID') cleanStatus = 'PARTIAL';
-
     switch (cleanStatus) {
-      case 'PAID':
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-2.5 py-0.5 text-xs font-bold">
-            Đã thanh toán
-          </span>
-        );
-      case 'PARTIAL':
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/25 px-2.5 py-0.5 text-xs font-bold">
-            Trả một phần
-          </span>
-        );
-      case 'UNPAID':
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/25 px-2.5 py-0.5 text-xs font-bold">
-            Chưa thanh toán
-          </span>
-        );
-      case 'OVERPAID':
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/25 px-2.5 py-0.5 text-xs font-bold">
-            Đóng dư
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 text-slate-400 border border-slate-500/25 px-2.5 py-0.5 text-xs font-bold">
-            {cleanStatus}
-          </span>
-        );
+      case 'PAID': return <Badge variant="success">Đã thanh toán</Badge>;
+      case 'PARTIAL': return <Badge variant="warning">Trả một phần</Badge>;
+      case 'UNPAID': return <Badge variant="danger">Chưa thanh toán</Badge>;
+      case 'OVERPAID': return <Badge variant="brand">Đóng dư</Badge>;
+      default: return <Badge variant="neutral">{cleanStatus}</Badge>;
     }
   };
 
-  // Calculations for Stats
   const activeInvoicesList = invoicesData?.content || [];
   const totalPages = invoicesData?.totalPages || 0;
-  
   const totalUnpaid = statsData?.totalUnpaidAmount || 0;
   const totalPaid = statsData?.totalPaidAmount || 0;
   const totalInvoicesCount = statsData?.totalInvoicesCount || 0;
 
   return (
-    <div className="space-y-6 relative">
-      {/* Toast notifications */}
-      <div className="fixed top-5 right-5 z-[100] flex flex-col gap-3">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`glass px-5 py-4 rounded-2xl flex items-center gap-3 shadow-xl border animate-slide-in max-w-sm ${
-              toast.type === 'success'
-                ? 'border-emerald-500/25 bg-emerald-950/40 text-emerald-400'
-                : 'border-red-500/25 bg-red-950/40 text-red-400'
-            }`}
-          >
-            {toast.type === 'success' ? (
-              <CheckCircle size={20} className="shrink-0" />
-            ) : (
-              <AlertCircle size={20} className="shrink-0" />
-            )}
-            <span className="text-sm font-semibold">{toast.message}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Header Panel */}
-      <div className="glass rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-white/5">
-        <div className="flex items-center gap-5">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-500/10 text-brand-400 border border-brand-500/20 shadow-md">
-            <Receipt size={28} />
-          </div>
-          <div>
-            <h2 className="text-2xl font-extrabold text-slate-50 tracking-wide">Quản lý Hóa đơn & Học phí</h2>
-            <p className="text-slate-400 text-sm mt-1">
-              Tra cứu hóa đơn của học viên, lập hóa đơn đơn lẻ hoặc hàng loạt và rà soát công nợ quá hạn.
-            </p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold text-slate-100">Quản lý Hóa đơn & Học phí</h2>
+          <p className="text-sm text-slate-400 mt-1">Tra cứu hóa đơn, lập hóa đơn đơn lẻ và rà soát công nợ.</p>
         </div>
-
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <button
-            onClick={() => {
-              setShowWarningsOnly(!showWarningsOnly);
-            }}
-            className={`flex items-center justify-center gap-2 rounded-2xl border text-sm font-bold px-5 py-3.5 transition-all cursor-pointer w-full md:w-auto ${
-              showWarningsOnly
-                ? 'bg-amber-500/15 border-amber-500/30 text-amber-400 shadow-lg shadow-amber-500/10'
-                : 'bg-slate-900/40 border-slate-800 text-slate-300 hover:bg-slate-800'
-            }`}
-          >
-            <AlertTriangle size={18} />
-            <span>Nợ Quá Hạn ({warningsData?.length || 0})</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setIsCreateOpen(true);
-              setValue('studentId', filters.studentId);
-              if (filters.classId) setValue('courseClassId', filters.classId);
-            }}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-brand-600 hover:bg-brand-500 hover:scale-[1.02] active:scale-95 text-white font-bold text-sm px-6 py-3.5 shadow-lg shadow-brand-500/25 transition-all cursor-pointer w-full md:w-auto shrink-0"
-          >
-            <Plus size={18} />
-            <span>Tạo Hóa đơn</span>
-          </button>
+        <div className="flex items-center gap-3">
+          <Button variant={showWarningsOnly ? 'primary' : 'secondary'} className={showWarningsOnly ? 'bg-amber-600 hover:bg-amber-500' : ''} onClick={() => setShowWarningsOnly(!showWarningsOnly)}>
+            <AlertTriangle size={16} className="mr-2" /> Nợ Quá Hạn ({warningsData?.length || 0})
+          </Button>
+          <Button onClick={() => { setIsCreateOpen(true); setValue('studentId', filters.studentId); if (filters.classId) setValue('courseClassId', filters.classId); }}>
+            <Plus size={16} className="mr-2" /> Tạo Hóa đơn
+          </Button>
         </div>
       </div>
 
-      {/* Search & Filters */}
       {!showWarningsOnly && (
-        <div className="glass rounded-3xl p-5 border border-white/5 shadow-lg space-y-4 animate-fade-in">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input
-                type="text"
-                placeholder="Tìm mã hóa đơn, tên học viên, mã học viên..."
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 0 }))}
-                className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-slate-100 focus:outline-none focus:border-brand-500"
-              />
-            </div>
-            
-            <div className="flex items-center gap-3 overflow-x-auto pb-1 md:pb-0">
-              <div className="relative shrink-0">
-                <select
-                  value={filters.studentId}
-                  onChange={(e) => setFilters(prev => ({ ...prev, studentId: e.target.value, page: 0 }))}
-                  className="bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-10 text-sm text-slate-100 focus:outline-none focus:border-brand-500 appearance-none cursor-pointer"
-                >
-                  <option value="">-- Tất cả Học viên --</option>
-                  {studentsData?.map((stu) => (
-                    <option key={stu.id} value={stu.id}>{stu.fullName} ({stu.studentCode})</option>
-                  ))}
+        <>
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col lg:flex-row gap-4 items-center">
+             <div className="relative w-full lg:w-64 shrink-0">
+               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+               <input type="text" value={filters.search} onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 0 }))} placeholder="Mã HĐ, tên HV..." className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500" />
+             </div>
+             <div className="flex items-center gap-2 overflow-x-auto w-full">
+                <select value={filters.studentId} onChange={(e) => setFilters(prev => ({ ...prev, studentId: e.target.value, page: 0 }))} className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500 min-w-[150px]">
+                   <option value="">-- Tất cả Học viên --</option>
+                   {studentsData?.map(s => <option key={s.id} value={s.id}>{s.fullName}</option>)}
                 </select>
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              </div>
-
-              <div className="relative shrink-0">
-                <select
-                  value={filters.classId}
-                  onChange={(e) => setFilters(prev => ({ ...prev, classId: e.target.value, page: 0 }))}
-                  className="bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-10 text-sm text-slate-100 focus:outline-none focus:border-brand-500 appearance-none cursor-pointer"
-                >
-                  <option value="">-- Tất cả Lớp học --</option>
-                  {classesData?.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
+                <select value={filters.classId} onChange={(e) => setFilters(prev => ({ ...prev, classId: e.target.value, page: 0 }))} className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500 min-w-[150px]">
+                   <option value="">-- Tất cả Lớp học --</option>
+                   {classesData?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              </div>
-
-              <div className="relative shrink-0">
-                <select
-                  value={filters.status}
-                  onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value, page: 0 }))}
-                  className="bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-10 text-sm text-slate-100 focus:outline-none focus:border-brand-500 appearance-none cursor-pointer"
-                >
-                  <option value="">-- Trạng thái --</option>
-                  <option value="UNPAID">Chưa thanh toán</option>
-                  <option value="PAID">Đã thanh toán</option>
-                  <option value="PARTIAL">Trạng thái Nợ (Partial)</option>
-                  <option value="OVERPAID">Đóng dư</option>
+                <select value={filters.status} onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value, page: 0 }))} className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500 min-w-[150px]">
+                   <option value="">-- Trạng thái --</option>
+                   <option value="UNPAID">Chưa thanh toán</option>
+                   <option value="PAID">Đã thanh toán</option>
+                   <option value="PARTIAL">Trả một phần</option>
+                   <option value="OVERPAID">Đóng dư</option>
                 </select>
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              </div>
-
-              <div className="relative shrink-0">
-                <input
-                  type="month"
-                  value={filters.month}
-                  onChange={(e) => setFilters(prev => ({ ...prev, month: e.target.value, page: 0 }))}
-                  className="bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-100 focus:outline-none focus:border-brand-500 cursor-pointer"
-                />
-              </div>
-
-              <button
-                onClick={() => setFilters({ page: 0, size: 10, search: '', studentId: '', classId: '', status: '', month: '' })}
-                className="shrink-0 flex items-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold transition-all border border-slate-700"
-              >
-                <RefreshCcw size={16} /> Xóa lọc
-              </button>
-            </div>
+                <input type="month" value={filters.month} onChange={(e) => setFilters(prev => ({ ...prev, month: e.target.value, page: 0 }))} className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500" />
+                <Button variant="ghost" onClick={() => setFilters({ page: 0, size: 10, search: '', studentId: '', classId: '', status: '', month: '' })}><RefreshCcw size={16}/></Button>
+             </div>
           </div>
-        </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+             <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
+                <div className="bg-slate-800 text-slate-300 p-3 rounded-lg"><History size={20}/></div>
+                <div><div className="text-sm text-slate-400">Tổng hóa đơn</div><div className="text-xl font-bold text-slate-200">{totalInvoicesCount}</div></div>
+             </div>
+             <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
+                <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><CheckCircle size={20}/></div>
+                <div><div className="text-sm text-slate-400">Đã hoàn thành</div><div className="text-xl font-bold text-emerald-400">{formatVND(totalPaid)}</div></div>
+             </div>
+             <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
+                <div className="bg-red-500/10 text-red-400 p-3 rounded-lg"><AlertTriangle size={20}/></div>
+                <div><div className="text-sm text-slate-400">Học phí còn nợ</div><div className="text-xl font-bold text-red-400">{formatVND(totalUnpaid)}</div></div>
+             </div>
+          </div>
+        </>
       )}
 
-      {/* Tra cứu Stats summary card */}
-      {!showWarningsOnly && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
-          <div className="glass rounded-2xl p-5 border border-white/5 flex items-center justify-between">
-            <div>
-              <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Tổng số hóa đơn</span>
-              <h3 className="text-2xl font-black text-slate-100 mt-1">{totalInvoicesCount} hóa đơn</h3>
-            </div>
-            <div className="p-3.5 bg-slate-800/40 rounded-xl border border-white/5 text-brand-400">
-              <History size={20} />
-            </div>
-          </div>
-
-          <div className="glass rounded-2xl p-5 border border-white/5 flex items-center justify-between">
-            <div>
-              <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Đã hoàn thành đóng</span>
-              <h3 className="text-2xl font-black text-emerald-400 mt-1">{formatVND(totalPaid)}</h3>
-            </div>
-            <div className="p-3.5 bg-slate-800/40 rounded-xl border border-white/5 text-emerald-400">
-              <CheckCircle size={20} />
-            </div>
-          </div>
-
-          <div className="glass rounded-2xl p-5 border border-white/5 flex items-center justify-between">
-            <div>
-              <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Học phí còn nợ</span>
-              <h3 className="text-2xl font-black text-red-400 mt-1">{formatVND(totalUnpaid)}</h3>
-            </div>
-            <div className="p-3.5 bg-slate-800/40 rounded-xl border border-white/5 text-red-400">
-              <AlertTriangle size={20} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Table Container */}
-      <div className="glass rounded-3xl border border-white/5 overflow-hidden shadow-2xl animate-fade-in">
-        {!showWarningsOnly ? (
-          // Standard Invoice List View
-          <div>
-            <div className="px-6 py-5 border-b border-slate-800 bg-slate-900/30 flex items-center justify-between">
-              <h3 className="font-bold text-slate-100 text-base">
-                Danh sách hóa đơn
-              </h3>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 bg-slate-900/30 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                    <th className="py-4 px-6">Mã Hóa đơn</th>
-                    <th className="py-4 px-6">Lớp học</th>
-                    <th className="py-4 px-6">Tháng đóng</th>
-                    <th className="py-4 px-6">Tổng học phí</th>
-                    <th className="py-4 px-6">Khuyến mãi</th>
-                    <th className="py-4 px-6">Đã đóng</th>
-                    <th className="py-4 px-6">Còn nợ</th>
-                    <th className="py-4 px-6">Hạn nộp</th>
-                    <th className="py-4 px-6">Trạng thái</th>
-                    <th className="py-4 px-6 text-center">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/50 text-sm text-slate-300">
-                  {isInvoicesLoading && (
-                    [...Array(3)].map((_, idx) => (
-                      <tr key={idx} className="animate-pulse">
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-16"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-28"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-16"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-20"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-16"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-20"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-20"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-20"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-6 bg-slate-800 rounded-full w-24"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-8 bg-slate-800 rounded w-12 mx-auto"></div></td>
-                      </tr>
-                    ))
-                  )}
-
-                  {!isInvoicesLoading && activeInvoicesList.length === 0 && (
-                    <tr>
-                      <td colSpan={10} className="py-16 text-center text-slate-500">
-                        {filters.search || filters.studentId || filters.classId || filters.status || filters.month
-                          ? 'Không tìm thấy hóa đơn phù hợp với bộ lọc.'
-                          : 'Chưa có hóa đơn nào.'}
-                      </td>
-                    </tr>
-                  )}
-
-                  {!isInvoicesLoading && activeInvoicesList.map((inv) => (
-                    <tr key={inv.id} className="hover:bg-slate-900/25 transition-all duration-150">
-                      <td className="py-4 px-6 font-mono font-bold text-brand-400 text-xs">
-                        {inv.invoiceCode}
-                      </td>
-                      <td className="py-4 px-6 font-bold text-slate-200">
-                        {inv.className}
-                      </td>
-                      <td className="py-4 px-6 text-slate-300 font-medium">
-                        {formatMonth(inv.billingMonth)}
-                      </td>
-                      <td className="py-4 px-6 font-mono font-extrabold text-slate-100">
-                        {formatVND(inv.finalAmount)}
-                      </td>
-                      <td className="py-4 px-6 text-xs text-slate-400">
-                        {inv.promotionName ? (
-                          <span className="inline-flex items-center gap-1 rounded bg-slate-800 px-2 py-1 text-slate-300 border border-slate-700 font-medium">
-                            <Gift size={11} className="text-brand-400" />
-                            {inv.promotionName} (-{formatVND(inv.discountAmount)})
-                          </span>
-                        ) : (
-                          <span className="text-slate-500">-</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-6 font-mono text-emerald-400 font-bold">
-                        {formatVND(inv.amountPaid)}
-                      </td>
-                      <td className="py-4 px-6 font-mono text-red-400 font-bold">
-                        {formatVND(inv.balanceAmount)}
-                      </td>
-                      <td className="py-4 px-6 text-slate-400 text-xs">
-                        {formatDate(inv.dueDate)}
-                      </td>
-                      <td className="py-4 px-6">
-                        {getStatusBadge(inv.status)}
-                      </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => {
-                              setSelectedInvoice(inv);
-                              setIsDetailsOpen(true);
-                            }}
-                            title="Xem chi tiết hóa đơn"
-                            className="rounded-lg p-2 bg-slate-800/40 text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-all cursor-pointer"
-                          >
-                            <Eye size={15} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/30 flex items-center justify-between">
-                <span className="text-sm text-slate-400">
-                  Trang {filters.page + 1} / {totalPages}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    disabled={filters.page === 0}
-                    onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
-                    className="p-2 rounded-lg bg-slate-800 text-slate-300 disabled:opacity-50 hover:bg-slate-700 transition-colors"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-                  <button
-                    disabled={filters.page >= totalPages - 1}
-                    onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
-                    className="p-2 rounded-lg bg-slate-800 text-slate-300 disabled:opacity-50 hover:bg-slate-700 transition-colors"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        {showWarningsOnly ? (
+           <Table>
+             <TableHeader>
+               <TableRow>
+                 <TableHead>Mã Hóa Đơn</TableHead>
+                 <TableHead>Học Viên</TableHead>
+                 <TableHead>Lớp Học</TableHead>
+                 <TableHead>Hạn Nộp</TableHead>
+                 <TableHead>Còn Nợ</TableHead>
+                 <TableHead>Quá Hạn</TableHead>
+                 <TableHead className="text-right">Thao Tác</TableHead>
+               </TableRow>
+             </TableHeader>
+             <TableBody>
+               {isWarningsLoading ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-slate-500">Đang tải...</TableCell></TableRow>
+               ) : !warningsData || warningsData.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} className="py-8"><EmptyState title="Không có nợ quá hạn" description="Tuyệt vời! Không có hóa đơn nào quá hạn thanh toán." /></TableCell></TableRow>
+               ) : (
+                  warningsData.map(w => (
+                     <TableRow key={w.invoiceId}>
+                        <TableCell className="font-mono text-brand-400 font-medium">{w.invoiceCode}</TableCell>
+                        <TableCell className="font-medium text-slate-200">{w.studentName}</TableCell>
+                        <TableCell className="text-slate-300">{w.className}</TableCell>
+                        <TableCell className="text-slate-400">{formatDate(w.dueDate)}</TableCell>
+                        <TableCell className="font-bold text-red-400">{formatVND(w.balanceAmount)}</TableCell>
+                        <TableCell><Badge variant="danger">{w.daysOverdue} ngày</Badge></TableCell>
+                        <TableCell className="text-right">
+                           <Button size="sm" variant="ghost" onClick={() => { /* load detail using invoiceId... for now just open detail */ setIsDetailsOpen(true); }}><Eye size={16}/></Button>
+                        </TableCell>
+                     </TableRow>
+                  ))
+               )}
+             </TableBody>
+           </Table>
         ) : (
-          // Overdue Warnings View
-          <div>
-            <div className="px-6 py-5 border-b border-slate-800 bg-slate-900/30 flex items-center justify-between">
-              <h3 className="font-bold text-amber-400 text-base flex items-center gap-2">
-                <AlertTriangle size={18} />
-                Danh sách Học viên nợ học phí quá hạn (&gt; 1 tháng)
-              </h3>
-              <button
-                onClick={() => setShowWarningsOnly(false)}
-                className="text-xs text-slate-400 hover:text-slate-200 bg-slate-800/60 hover:bg-slate-850 px-3.5 py-2 rounded-xl transition-all border border-slate-700 cursor-pointer"
-              >
-                Quay lại Tra cứu
-              </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 bg-slate-900/30 text-slate-400 text-xs font-bold uppercase tracking-wider">
-                    <th className="py-4 px-6">Mã Hóa đơn</th>
-                    <th className="py-4 px-6">Học viên</th>
-                    <th className="py-4 px-6">Lớp học</th>
-                    <th className="py-4 px-6">Tháng hóa đơn</th>
-                    <th className="py-4 px-6">Hạn đóng nộp</th>
-                    <th className="py-4 px-6">Số tiền nợ lại</th>
-                    <th className="py-4 px-6">Số ngày quá hạn</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/50 text-sm text-slate-300">
-                  {isWarningsLoading && (
-                    [...Array(3)].map((_, idx) => (
-                      <tr key={idx} className="animate-pulse">
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-16"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-36"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-28"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-20"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-20"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-24"></div></td>
-                        <td className="py-4.5 px-6"><div className="h-4 bg-slate-800 rounded w-16"></div></td>
-                      </tr>
-                    ))
+           <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Mã HĐ</TableHead>
+                    <TableHead>Lớp Học</TableHead>
+                    <TableHead>Tháng</TableHead>
+                    <TableHead>Tổng tiền</TableHead>
+                    <TableHead>Khuyến mãi</TableHead>
+                    <TableHead>Đã đóng</TableHead>
+                    <TableHead>Còn nợ</TableHead>
+                    <TableHead>Hạn nộp</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead className="text-right">Thao tác</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isInvoicesLoading ? (
+                     <TableRow><TableCell colSpan={10} className="text-center py-8 text-slate-500">Đang tải...</TableCell></TableRow>
+                  ) : activeInvoicesList.length === 0 ? (
+                     <TableRow><TableCell colSpan={10} className="py-8"><EmptyState title="Không có hóa đơn" description="Không tìm thấy hóa đơn phù hợp." isSearch={!!filters.search} /></TableCell></TableRow>
+                  ) : (
+                     activeInvoicesList.map(inv => (
+                        <TableRow key={inv.id}>
+                           <TableCell className="font-mono text-brand-400 font-medium">{inv.invoiceCode}</TableCell>
+                           <TableCell className="font-medium text-slate-200">{inv.className}</TableCell>
+                           <TableCell className="text-slate-300">{formatMonth(inv.billingMonth)}</TableCell>
+                           <TableCell className="font-semibold text-slate-100">{formatVND(inv.finalAmount)}</TableCell>
+                           <TableCell>
+                              {inv.promotionName ? <span className="text-xs bg-slate-800 text-brand-400 px-2 py-1 rounded-md border border-slate-700 flex items-center w-max gap-1"><Gift size={12}/>{inv.promotionName}</span> : '-'}
+                           </TableCell>
+                           <TableCell className="font-semibold text-emerald-400">{formatVND(inv.amountPaid)}</TableCell>
+                           <TableCell className="font-semibold text-red-400">{formatVND(inv.balanceAmount)}</TableCell>
+                           <TableCell className="text-slate-400 text-xs">{formatDate(inv.dueDate)}</TableCell>
+                           <TableCell>{getStatusBadge(inv.status)}</TableCell>
+                           <TableCell className="text-right">
+                              <Button size="sm" variant="ghost" onClick={() => { setSelectedInvoice(inv); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
+                           </TableCell>
+                        </TableRow>
+                     ))
                   )}
-
-                  {!isWarningsLoading && (!warningsData || warningsData.length === 0) && (
-                    <tr>
-                      <td colSpan={7} className="py-16 text-center text-slate-500">
-                        Không phát hiện trường hợp nợ học phí quá hạn nào! Hệ thống tài chính cực kỳ lành mạnh.
-                      </td>
-                    </tr>
-                  )}
-
-                  {!isWarningsLoading && warningsData && warningsData.map((war: any) => (
-                    <tr key={war.invoiceId} className="hover:bg-amber-950/10 hover:border-l-2 hover:border-l-amber-500 transition-all duration-150">
-                      <td className="py-4 px-6 font-mono font-bold text-amber-500 text-xs">
-                        {war.invoiceCode}
-                      </td>
-                      <td className="py-4 px-6 font-bold text-slate-100">
-                        {war.studentName}
-                      </td>
-                      <td className="py-4 px-6 text-slate-300 font-medium">
-                        {war.className}
-                      </td>
-                      <td className="py-4 px-6 text-slate-400">
-                        {formatMonth(war.billingMonth)}
-                      </td>
-                      <td className="py-4 px-6 text-slate-400 text-xs">
-                        {formatDate(war.dueDate)}
-                      </td>
-                      <td className="py-4 px-6 font-mono text-red-400 font-extrabold text-sm">
-                        {formatVND(war.balanceAmount)}
-                      </td>
-                      <td className="py-4 px-6 font-bold text-amber-400 font-mono">
-                        {war.overdueDays} ngày quá hạn
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                </TableBody>
+              </Table>
+              {!isInvoicesLoading && totalPages > 1 && (
+                 <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
+                    <span className="text-sm text-slate-500">Trang {filters.page + 1} / {totalPages}</span>
+                    <div className="flex gap-2">
+                       <Button variant="secondary" size="sm" disabled={filters.page === 0} onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}>Trước</Button>
+                       <Button variant="secondary" size="sm" disabled={filters.page >= totalPages - 1} onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}>Sau</Button>
+                    </div>
+                 </div>
+              )}
+           </>
         )}
       </div>
 
-      {/* ==========================================
-          MODAL: VIEW DETAILS
-          ========================================== */}
-      {isDetailsOpen && selectedInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-          <div className="glass rounded-3xl border border-white/10 w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden shadow-2xl animate-zoom-in">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800 bg-slate-900/30">
-              <div className="flex items-center gap-3">
-                <span className="font-mono text-xs font-black bg-brand-500/10 text-brand-400 border border-brand-500/20 px-2 py-1 rounded">
-                  {selectedInvoice.invoiceCode}
-                </span>
-                <h3 className="text-lg font-bold text-slate-50">Chi tiết Hóa đơn học phí</h3>
-              </div>
-              <button
-                onClick={() => setIsDetailsOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all cursor-pointer"
-              >
-                <X size={18} />
-              </button>
+      <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Tạo Hóa đơn Mới" maxWidth="2xl">
+         <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+               <Select label="Học viên *" {...register('studentId')} error={errors.studentId?.message as string}>
+                  <option value="">-- Chọn Học viên --</option>
+                  {studentsData?.map(s => <option key={s.id} value={s.id}>{s.studentCode} - {s.fullName}</option>)}
+               </Select>
+               <Select label="Lớp học *" {...register('courseClassId')} error={errors.courseClassId?.message as string}>
+                  <option value="">-- Chọn Lớp học --</option>
+                  {classesData?.map(c => <option key={c.id} value={c.id}>{c.classCode} - {c.name}</option>)}
+               </Select>
+               <Input label="Tháng thu phí *" type="month" {...register('monthInput')} error={errors.monthInput?.message as string} />
+               <Input label="Học phí gốc (VND) *" type="number" {...register('originalAmount')} error={errors.originalAmount?.message as string} />
+               <Select label="Khuyến mãi" {...register('promotionId')}>
+                  <option value="">-- Không áp dụng KM --</option>
+                  {promotionsData?.map(p => <option key={p.id} value={p.id}>{p.code} - Giảm {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : formatVND(p.discountValue)}</option>)}
+               </Select>
+               <Input label="Hạn nộp" type="date" {...register('dueDate')} />
+               <div className="col-span-2">
+                  <Input label="Ghi chú" {...register('note')} />
+               </div>
             </div>
-
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Student and Class Header card */}
-              <div className="p-5 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-slate-500 text-xs block">Tên Học viên</span>
-                    <span className="text-slate-100 font-extrabold mt-1 text-base block">
-                      {selectedInvoice.studentName}
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-slate-500 text-xs block">Lớp học liên kết</span>
-                    <span className="text-slate-100 font-bold mt-1 text-sm block">
-                      {selectedInvoice.className}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-800/80">
-                  <div>
-                    <span className="text-slate-500 text-xs block">Tháng đóng học phí</span>
-                    <span className="text-slate-200 font-semibold mt-1 text-sm block">
-                      {formatMonth(selectedInvoice.billingMonth)}
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-slate-500 text-xs block">Hạn đóng nộp cuối</span>
-                    <span className="text-slate-200 font-semibold mt-1 text-sm block">
-                      {formatDate(selectedInvoice.dueDate)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Financial aggregates */}
-              <div className="p-5 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
-                <h4 className="text-xs font-bold text-brand-400 uppercase tracking-wider pb-2 border-b border-slate-800">
-                  Chi tiết tài chính hóa đơn
-                </h4>
-
-                <div className="flex justify-between items-center text-sm py-1">
-                  <span className="text-slate-400">Học phí gốc lớp học</span>
-                  <span className="font-mono text-slate-100 font-semibold">{formatVND(selectedInvoice.originalAmount)}</span>
-                </div>
-
-                {selectedInvoice.promotionName && (
-                  <div className="flex justify-between items-center text-sm py-1 text-amber-400">
-                    <span className="flex items-center gap-1.5">
-                      <Gift size={14} />
-                      Áp dụng ưu đãi: {selectedInvoice.promotionName}
-                    </span>
-                    <span className="font-mono font-bold">- {formatVND(selectedInvoice.discountAmount)}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center text-sm py-2 border-t border-slate-800/80 font-bold">
-                  <span className="text-slate-200">Tổng tiền phải thanh toán</span>
-                  <span className="font-mono text-brand-400 text-base">{formatVND(selectedInvoice.finalAmount)}</span>
-                </div>
-
-                <div className="flex justify-between items-center text-sm py-1 border-t border-slate-800/40 text-emerald-400 font-semibold">
-                  <span>Số tiền đã thanh toán</span>
-                  <span className="font-mono">{formatVND(selectedInvoice.amountPaid)}</span>
-                </div>
-
-                <div className="flex justify-between items-center text-sm py-2 border-t border-slate-800/60 text-red-400 font-bold">
-                  <span>Dư nợ học phí còn lại</span>
-                  <span className="font-mono text-lg">{formatVND(selectedInvoice.balanceAmount)}</span>
-                </div>
-              </div>
-
-              {/* Notes */}
-              {selectedInvoice.note && (
-                <div>
-                  <span className="text-slate-500 text-xs block mb-1">Ghi chú học phí</span>
-                  <p className="text-slate-300 text-xs bg-slate-900/60 p-4 rounded-xl border border-slate-800 leading-relaxed font-medium">
-                    {selectedInvoice.note}
-                  </p>
-                </div>
-              )}
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+               <Button variant="secondary" type="button" onClick={() => setIsCreateOpen(false)}>Hủy</Button>
+               <Button variant="primary" type="submit" isLoading={createInvoiceMutation.isPending}>Tạo hóa đơn</Button>
             </div>
+         </form>
+      </Modal>
 
-            <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/30 flex justify-end">
-              <button
-                onClick={() => setIsDetailsOpen(false)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold px-5 py-2.5 transition-all cursor-pointer"
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ==========================================
-          MODAL: CREATE SINGLE INVOICE
-          ========================================== */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-          <div className="glass rounded-3xl border border-white/10 w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-zoom-in">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800 bg-slate-900/30">
-              <h3 className="text-lg font-bold text-slate-50">Tạo hóa đơn học phí đơn lẻ</h3>
-              <button
-                onClick={() => setIsCreateOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit(onSubmitForm)} className="flex-1 overflow-y-auto p-6 space-y-4">
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold text-brand-400 uppercase tracking-wider pb-1.5 border-b border-slate-800 flex items-center gap-1.5">
-                  <Sparkles size={14} />
-                  Thông tin học tập & học phí
-                </h4>
-
-                {/* Select Student */}
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Chọn học viên *</label>
-                  <select
-                    {...register('studentId')}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2.5 px-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500 cursor-pointer"
-                  >
-                    <option value="">-- Chọn Học viên --</option>
-                    {studentsData?.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.fullName} ({s.studentCode})
-                      </option>
-                    ))}
-                  </select>
-                  {errors.studentId && <p className="text-red-400 text-xs mt-1">{errors.studentId.message}</p>}
-                </div>
-
-                {/* Select Class */}
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Chọn Lớp học *</label>
-                  <select
-                    {...register('courseClassId')}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2.5 px-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500 cursor-pointer"
-                  >
-                    <option value="">-- Chọn Lớp học --</option>
-                    {classesData?.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({formatVND(c.tuitionFee)})
-                      </option>
-                    ))}
-                  </select>
-                  {errors.courseClassId && <p className="text-red-400 text-xs mt-1">{errors.courseClassId.message}</p>}
-                </div>
-
-                {/* Select Promotion */}
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Chương trình khuyến mãi ưu đãi</label>
-                  <select
-                    {...register('promotionId')}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2.5 px-3 text-sm text-slate-200 focus:outline-none focus:border-brand-500 cursor-pointer"
-                  >
-                    <option value="">-- Không áp dụng khuyến mãi --</option>
-                    {promotionsData?.filter(p => p.isActive).map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.discountType === 'PERCENTAGE' || p.discountType === 'PERCENT' ? `Giảm ${p.discountValue}%` : `Giảm ${formatVND(p.discountValue)}`})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Tuition Fee amount */}
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Học phí gốc (VND) *</label>
-                  <input
-                    type="number"
-                    {...register('originalAmount')}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-3 text-sm text-slate-100 focus:outline-none focus:border-brand-500 font-mono"
-                  />
-                  {errors.originalAmount && <p className="text-red-400 text-xs mt-1">{errors.originalAmount.message}</p>}
-                </div>
-
-                {/* Month input (HTML5 Month Picker) */}
-                <div className="grid grid-cols-2 gap-4">
+      <Modal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} title="Chi tiết Hóa đơn" maxWidth="2xl">
+         {selectedInvoice && (
+            <div className="space-y-6">
+               <div className="flex justify-between items-start border-b border-slate-800 pb-4">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1.5 font-medium">Tháng hóa đơn *</label>
-                    <input
-                      type="month"
-                      {...register('monthInput')}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-3 text-sm text-slate-100 focus:outline-none focus:border-brand-500 font-mono"
-                    />
-                    {errors.monthInput && <p className="text-red-400 text-xs mt-1">{errors.monthInput.message}</p>}
+                     <div className="flex items-center gap-3 mb-1">
+                        <h3 className="text-xl font-bold text-slate-100">Hóa đơn {selectedInvoice.invoiceCode}</h3>
+                        {getStatusBadge(selectedInvoice.status)}
+                     </div>
+                     <p className="text-slate-400 text-sm">Học viên: <span className="font-medium text-slate-200">{selectedInvoice.studentName} ({selectedInvoice.studentCode})</span></p>
                   </div>
-
-                  <div>
-                    <label className="block text-xs text-slate-400 mb-1.5 font-medium">Hạn thanh toán</label>
-                    <input
-                      type="date"
-                      {...register('dueDate')}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-3 text-sm text-slate-100 focus:outline-none focus:border-brand-500 font-mono"
-                    />
+                  <Button variant="secondary" size="sm" className="gap-2"><Download size={14}/> In hóa đơn</Button>
+               </div>
+               
+               <div className="grid grid-cols-2 gap-6 text-sm">
+                  <div className="space-y-3">
+                     <h4 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Thông tin thu phí</h4>
+                     <div className="flex justify-between"><span className="text-slate-500">Lớp học:</span> <span className="text-slate-200">{selectedInvoice.className}</span></div>
+                     <div className="flex justify-between"><span className="text-slate-500">Tháng đóng:</span> <span className="text-slate-200">{formatMonth(selectedInvoice.billingMonth)}</span></div>
+                     <div className="flex justify-between"><span className="text-slate-500">Ngày tạo:</span> <span className="text-slate-200">{formatDate(selectedInvoice.createdAt)}</span></div>
+                     <div className="flex justify-between"><span className="text-slate-500">Hạn nộp:</span> <span className="text-slate-200">{formatDate(selectedInvoice.dueDate)}</span></div>
                   </div>
-                </div>
+                  <div className="space-y-3">
+                     <h4 className="font-semibold text-slate-300 border-b border-slate-800 pb-2">Chi tiết số tiền</h4>
+                     <div className="flex justify-between"><span className="text-slate-500">Học phí gốc:</span> <span className="text-slate-200">{formatVND(selectedInvoice.originalAmount)}</span></div>
+                     {selectedInvoice.discountAmount > 0 && (
+                        <div className="flex justify-between text-brand-400"><span className="text-brand-400/70">Khuyến mãi ({selectedInvoice.promotionName}):</span> <span>-{formatVND(selectedInvoice.discountAmount)}</span></div>
+                     )}
+                     <div className="flex justify-between font-bold text-base border-t border-slate-800 pt-2"><span className="text-slate-300">Tổng phải thu:</span> <span className="text-slate-100">{formatVND(selectedInvoice.finalAmount)}</span></div>
+                     <div className="flex justify-between"><span className="text-slate-500">Đã thanh toán:</span> <span className="text-emerald-400 font-semibold">{formatVND(selectedInvoice.amountPaid)}</span></div>
+                     <div className="flex justify-between"><span className="text-slate-500">Còn nợ:</span> <span className="text-red-400 font-semibold">{formatVND(selectedInvoice.balanceAmount)}</span></div>
+                  </div>
+               </div>
+               
+               {selectedInvoice.note && (
+                  <div className="bg-slate-900 border border-slate-800 p-3 rounded-lg text-sm text-slate-300">
+                     <span className="text-slate-500 font-medium">Ghi chú:</span> {selectedInvoice.note}
+                  </div>
+               )}
 
-                {/* Notes */}
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1.5 font-medium">Ghi chú đính kèm</label>
-                  <textarea
-                    rows={2}
-                    {...register('note')}
-                    placeholder="Ghi chú đính kèm hóa đơn..."
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 px-3 text-sm text-slate-100 focus:outline-none focus:border-brand-500 text-xs leading-relaxed"
-                  />
-                </div>
-              </div>
-
-              {/* Form buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800/80">
-                <button
-                  type="button"
-                  onClick={() => setIsCreateOpen(false)}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold px-5 py-3 transition-all cursor-pointer"
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  type="submit"
-                  disabled={createInvoiceMutation.isPending}
-                  className="bg-brand-600 hover:bg-brand-500 disabled:bg-brand-800 text-white rounded-xl text-xs font-bold px-6 py-3 transition-all cursor-pointer flex items-center gap-2"
-                >
-                  {createInvoiceMutation.isPending ? (
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                  ) : (
-                    'Xuất Hóa đơn'
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+               <div className="flex justify-end pt-4 border-t border-slate-800">
+                  <Button variant="secondary" onClick={() => setIsDetailsOpen(false)}>Đóng</Button>
+               </div>
+            </div>
+         )}
+      </Modal>
     </div>
   );
 };
-
-export default BillingView;

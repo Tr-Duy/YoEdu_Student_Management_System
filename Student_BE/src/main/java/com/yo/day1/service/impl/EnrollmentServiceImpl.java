@@ -1,6 +1,7 @@
 package com.yo.day1.service.impl;
 
 import com.yo.day1.common.exception.BadRequestException;
+import com.yo.day1.common.exception.ConflictException;
 import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.CourseClass;
 import com.yo.day1.domain.entity.Enrollment;
@@ -14,6 +15,7 @@ import com.yo.day1.repository.CourseClassRepository;
 import com.yo.day1.repository.EnrollmentRepository;
 import com.yo.day1.service.CourseClassService;
 import com.yo.day1.service.EnrollmentService;
+import com.yo.day1.service.ScheduleConflictService;
 import com.yo.day1.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -31,6 +33,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final CourseClassRepository courseClassRepository;
     private final StudentService studentService;
     private final CourseClassService courseClassService;
+    private final ScheduleConflictService scheduleConflictService;
     private final ModelMapper mapper;
 
     @Transactional
@@ -38,7 +41,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public EnrollmentResponse create(EnrollmentCreateRequest request) throws BadRequestException, NotFoundExeception {
         if (enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(
                 request.getStudentId(), request.getCourseClassId(), EnrollmentStatus.ACTIVE)) {
-            throw new BadRequestException("Student is already enrolled in this class");
+            throw new ConflictException("Học viên đã đăng ký lớp này.");
         }
 
         CourseClass courseClass = courseClassService.getCourseClass(request.getCourseClassId());
@@ -53,12 +56,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         long activeCount = enrollmentRepository.countByCourseClassIdAndStatus(
                 request.getCourseClassId(), EnrollmentStatus.ACTIVE);
         if (activeCount >= courseClass.getMaxStudents()) {
-            throw new BadRequestException("Class is full");
+            throw new ConflictException("Không thể đăng ký: lớp đã đủ số lượng học viên.");
         }
 
-        if (enrollmentRepository.hasScheduleConflict(
-                request.getStudentId(), courseClass.getScheduleSlot().getId(), request.getCourseClassId())) {
-            throw new BadRequestException("Học viên đã có lớp học vào khung giờ này (trùng lịch)");
+        String conflictMsg = scheduleConflictService.getStudentConflictMessage(
+                request.getStudentId(), courseClass.getScheduleSlot(), null);
+        if (conflictMsg != null) {
+            throw new ConflictException("Không thể đăng ký: " + conflictMsg);
         }
 
         Student student = studentService.getStudent(request.getStudentId());
@@ -137,16 +141,17 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new BadRequestException("Lớp đích đã đóng");
         }
         if (toClass.getStatus() == ClassStatus.FULL) {
-            throw new BadRequestException("Lớp đích đã đầy");
+            throw new ConflictException("Lớp đích đã đầy");
         }
         if (enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(
                 request.studentId(), request.toClassId(), EnrollmentStatus.ACTIVE)) {
-            throw new BadRequestException("Học viên đã có trong lớp đích");
+            throw new ConflictException("Học viên đã đăng ký lớp đích");
         }
 
-        if (enrollmentRepository.hasScheduleConflict(
-                request.studentId(), toClass.getScheduleSlot().getId(), request.fromClassId())) {
-            throw new BadRequestException("Lớp đích trùng lịch với lớp khác của học viên");
+        String conflictMsg = scheduleConflictService.getStudentConflictMessage(
+                request.studentId(), toClass.getScheduleSlot(), request.fromClassId());
+        if (conflictMsg != null) {
+            throw new ConflictException("Lớp đích trùng lịch: " + conflictMsg);
         }
 
         CourseClass fromClass = current.getCourseClass();

@@ -20,4 +20,10 @@ public interface CourseClassRepository extends JpaRepository<CourseClass, Long>,
             WHERE e.student.id = :studentId AND e.status = 'ACTIVE'
             """)
     List<CourseClass> findActiveClassesByStudentId(@Param("studentId") Long studentId);
+
+    @Query("SELECT cc FROM CourseClass cc WHERE cc.room.id = :roomId AND cc.status = 'OPEN'")
+    List<CourseClass> findOpenClassesByRoomId(@Param("roomId") Long roomId);
+
+    @Query("SELECT cc FROM CourseClass cc WHERE (cc.mainTeacher.id = :teacherId OR cc.assistantTeacher.id = :teacherId) AND cc.status = 'OPEN'")
+    List<CourseClass> findOpenClassesByTeacherId(@Param("teacherId") Long teacherId);
 }
