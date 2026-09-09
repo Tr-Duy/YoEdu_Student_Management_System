@@ -32,7 +32,7 @@ public class CourseSearchIntegrationTest {
             javaCourse.setCourseCode("JAVA01");
             javaCourse.setCourseName("Java Core Updated");
             javaCourse.setCourseDescription("Khoá học Java Core từ cơ bản đến nâng cao");
-            javaCourse.setTuitionFee(2500000);
+            javaCourse.setTuitionFee(java.math.BigDecimal.valueOf(2500000));
             javaCourse.setTotalSession(36);
             javaCourse.setIsActive((byte) 1);
             courseRepository.save(javaCourse);
@@ -42,7 +42,7 @@ public class CourseSearchIntegrationTest {
             c002.setCourseCode("C002");
             c002.setCourseName("Lập trình Scratch cơ bản");
             c002.setCourseDescription("Làm quen tư duy lập trình");
-            c002.setTuitionFee(1500000);
+            c002.setTuitionFee(java.math.BigDecimal.valueOf(1500000));
             c002.setTotalSession(20);
             c002.setIsActive((byte) 1);
             courseRepository.save(c002);
@@ -52,7 +52,7 @@ public class CourseSearchIntegrationTest {
             c003.setCourseCode("C003");
             c003.setCourseName("Toán tư duy lớp 6");
             c003.setCourseDescription("Phát triển tư duy logic");
-            c003.setTuitionFee(1300000);
+            c003.setTuitionFee(java.math.BigDecimal.valueOf(1300000));
             c003.setTotalSession(24);
             c003.setIsActive((byte) 1);
             courseRepository.save(c003);

@@ -253,7 +253,7 @@ export const ClassesView: React.FC = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm text-foreground-secondary">{c.currentStudents} / {c.maxStudents}</div>
+                    <div className="text-sm text-foreground-secondary">{c.enrolledCount || 0} / {c.maxStudents}</div>
                     <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{formatVND(c.tuitionFee)}</div>
                   </TableCell>
                   <TableCell>
@@ -324,7 +324,7 @@ export const ClassesView: React.FC = () => {
                   <span className="text-foreground-muted">Trợ giảng:</span>
                   <span className="text-foreground">{selectedClass.assistantTeacherName || (selectedClass as any).assistantTeacher?.fullName || 'Không có'}</span>
                 </div>
-                <div className="flex justify-between"><span className="text-foreground-muted">Sĩ số:</span><span className="text-foreground">{selectedClass.currentStudents || 0} / {selectedClass.maxStudents}</span></div>
+                <div className="flex justify-between"><span className="text-foreground-muted">Sĩ số:</span><span className="text-foreground">{selectedClass.enrolledCount || 0} / {selectedClass.maxStudents}</span></div>
                 <div className="flex justify-between"><span className="text-foreground-muted">Học phí:</span><span className="text-emerald-600 dark:text-emerald-400 font-semibold">{formatVND(selectedClass.tuitionFee)}</span></div>
               </div>
             </div>

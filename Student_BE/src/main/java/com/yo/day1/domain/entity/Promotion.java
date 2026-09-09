@@ -5,7 +5,7 @@ import com.yo.day1.domain.enums.DiscountType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -24,8 +24,8 @@ public class Promotion extends AuditableEntity {
     @Column(name = "discount_type", nullable = false, length = 20)
     private DiscountType discountType;
 
-    @Column(name = "discount_value", nullable = false)
-    private float discountValue;
+    @Column(name = "discount_value", nullable = false, precision = 12, scale = 2)
+    private BigDecimal discountValue = BigDecimal.ZERO;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;

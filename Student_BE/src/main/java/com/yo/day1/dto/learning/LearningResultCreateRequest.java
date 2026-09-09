@@ -16,6 +16,7 @@ public class LearningResultCreateRequest {
     @NotNull
     LocalDate resultMonth;
     @DecimalMin("0.0")
+    @jakarta.validation.constraints.DecimalMax("10.0")
     BigDecimal score;
     String teacherComment;
 }

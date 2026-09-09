@@ -192,6 +192,9 @@ public class CourseClassServiceImpl implements CourseClassService {
     }
 
     private CourseClassResponse toResponse(CourseClass c) {
+        int enrolledCount = enrollmentRepository != null ? 
+            (int) enrollmentRepository.countByCourseClassIdAndStatus(c.getId(), com.yo.day1.domain.enums.EnrollmentStatus.ACTIVE) : 0;
+            
         return new CourseClassResponse(
                 c.getId(),
                 c.getClassCode(),
@@ -209,6 +212,7 @@ public class CourseClassServiceImpl implements CourseClassService {
                 c.getStartDate(),
                 c.getEndDate(),
                 c.getMaxStudents(),
+                enrolledCount,
                 c.getTuitionFee(),
                 c.getStatus() != null ? c.getStatus().name() : null,
                 c.getCreatedAt(),

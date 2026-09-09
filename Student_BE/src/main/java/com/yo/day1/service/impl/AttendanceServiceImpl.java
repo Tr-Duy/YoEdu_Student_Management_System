@@ -241,7 +241,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (scheduledWeekday == null) return true;
         int isoWeekday = attendanceDate.getDayOfWeek().getValue();
         int vnStyleWeekday = isoWeekday == 7 ? 8 : isoWeekday + 1;
-        return scheduledWeekday == isoWeekday || scheduledWeekday == vnStyleWeekday;
+        return scheduledWeekday == vnStyleWeekday;
     }
 
     private String duplicateAttendanceMessage(AttendanceCreateRequest request) {

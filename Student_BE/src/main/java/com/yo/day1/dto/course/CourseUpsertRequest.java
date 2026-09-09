@@ -19,8 +19,8 @@ public class CourseUpsertRequest {
 
     private String courseDescription;
 
-    @Min(value = 0, message = "Học phí không được âm")
-    private double tuitionFee;
+    @jakarta.validation.constraints.DecimalMin(value = "0.0", message = "Học phí không được âm")
+    private java.math.BigDecimal tuitionFee = java.math.BigDecimal.ZERO;
 
     @Min(value = 1, message = "Số buổi học phải lớn hơn 0")
     private int totalSession;

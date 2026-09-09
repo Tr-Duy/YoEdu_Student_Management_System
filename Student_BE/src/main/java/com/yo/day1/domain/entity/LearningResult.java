@@ -29,8 +29,7 @@ public class LearningResult extends AuditableEntity {
     @Column(precision = 5, scale = 2)
     private BigDecimal score;
 
-    @Lob
-    @Column(name = "teacher_comment")
+    @Column(name = "teacher_comment", columnDefinition = "TEXT")
     private String teacherComment;
 
     @ManyToOne(fetch = FetchType.LAZY)

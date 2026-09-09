@@ -31,6 +31,8 @@ public class StudentUpsertRequest {
 
     private StudentStatus status = StudentStatus.ACTIVE;
 
+    @jakarta.validation.constraints.DecimalMin(value = "0.0", message = "Điểm số không được nhỏ hơn 0")
+    @jakarta.validation.constraints.DecimalMax(value = "10.0", message = "Điểm số không được lớn hơn 10")
     private BigDecimal latestScore = BigDecimal.ZERO;
 
     private String note;

@@ -18,7 +18,9 @@ public class PromotionUpsertRequest {
     @NotNull(message = "Hình thức chiết khấu không được để trống")
     private DiscountType discountType;
 
-    private float discountValue;
+    @NotNull(message = "Giá trị ưu đãi không được để trống")
+    @jakarta.validation.constraints.DecimalMin(value = "0.01", message = "Giá trị ưu đãi phải lớn hơn 0")
+    private java.math.BigDecimal discountValue;
 
     @NotNull(message = "Ngày bắt đầu không được để trống")
     private LocalDate startDate;

@@ -207,7 +207,7 @@ export const ReportsView: React.FC = () => {
                      : attendanceSummaryData.map((row: any, i: number) => (
                         <TableRow key={i}>
                            <TableCell className="font-medium text-foreground">{row.className}</TableCell>
-                           <TableCell className="text-center text-foreground-muted">{row.totalCount}</TableCell>
+                           <TableCell className="text-center text-foreground-muted">{row.totalSessions}</TableCell>
                            <TableCell className="text-center text-emerald-600 dark:text-emerald-400 font-medium">{row.presentCount}</TableCell>
                            <TableCell className="text-center text-amber-600 dark:text-amber-400 font-medium">{row.lateCount}</TableCell>
                            <TableCell className="text-center text-red-500 font-medium">{row.absentCount}</TableCell>
@@ -270,9 +270,9 @@ export const ReportsView: React.FC = () => {
                      : learningSummaryData.map((row: any, i: number) => (
                         <TableRow key={i}>
                            <TableCell className="font-medium text-foreground">{row.className}</TableCell>
-                           <TableCell className="text-center text-foreground-muted">{row.totalScoreCount}</TableCell>
-                           <TableCell className="text-center font-bold text-violet-600 dark:text-violet-400">{row.avgScore.toFixed(1)}</TableCell>
-                           <TableCell className="text-center text-foreground-secondary">{row.minScore.toFixed(1)} - {row.maxScore.toFixed(1)}</TableCell>
+                           <TableCell className="text-center text-foreground-muted">{row.totalStudents}</TableCell>
+                           <TableCell className="text-center font-bold text-violet-600 dark:text-violet-400">{(row.averageScore || 0).toFixed(1)}</TableCell>
+                           <TableCell className="text-center text-foreground-secondary">{(row.minScore || 0).toFixed(1)} - {(row.maxScore || 0).toFixed(1)}</TableCell>
                            <TableCell className="text-center text-emerald-600 dark:text-emerald-400 font-semibold">{row.excellentCount}</TableCell>
                            <TableCell className="text-center text-blue-600 dark:text-blue-400 font-semibold">{row.goodCount}</TableCell>
                            <TableCell className="text-center text-amber-600 dark:text-amber-400 font-semibold">{row.averageCount}</TableCell>
@@ -291,9 +291,8 @@ export const ReportsView: React.FC = () => {
                   <TableHeader>
                      <TableRow>
                         <TableHead>Lớp học</TableHead>
-                        <TableHead>Môn học</TableHead>
-                        <TableHead>Phòng</TableHead>
-                        <TableHead>Thời gian</TableHead>
+                        <TableHead>Mã Lớp</TableHead>
+                        <TableHead>Trạng thái</TableHead>
                         <TableHead className="text-center">Tối đa</TableHead>
                         <TableHead className="text-center">Hiện tại</TableHead>
                         <TableHead>Lấp đầy</TableHead>
@@ -305,9 +304,16 @@ export const ReportsView: React.FC = () => {
                      : classEnrollmentData.map((row: any, i: number) => (
                         <TableRow key={i}>
                            <TableCell className="font-medium text-foreground">{row.className}</TableCell>
-                           <TableCell className="text-foreground-secondary">{row.courseName}</TableCell>
-                           <TableCell className="text-foreground-secondary">{row.roomName}</TableCell>
-                           <TableCell className="text-foreground-muted text-xs">{row.scheduleSlotLabel}</TableCell>
+                           <TableCell className="text-foreground-secondary">{row.classCode}</TableCell>
+                           <TableCell className="text-foreground-secondary">
+                             <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                               row.status === 'OPEN' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                               row.status === 'ONGOING' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                               'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                             }`}>
+                               {row.status}
+                             </span>
+                           </TableCell>
                            <TableCell className="text-center text-foreground-muted">{row.maxStudents}</TableCell>
                            <TableCell className="text-center font-bold text-foreground">{row.enrolledCount}</TableCell>
                            <TableCell>

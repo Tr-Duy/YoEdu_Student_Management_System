@@ -12,7 +12,7 @@ public class CourseResponse {
     private String courseCode;
     private String courseName;
     private String courseDescription;
-    private double tuitionFee;
+    private java.math.BigDecimal tuitionFee;
     private int totalSession;
     private byte isActive;
     private LocalDateTime createdAt;

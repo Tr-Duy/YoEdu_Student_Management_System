@@ -21,6 +21,7 @@ public record CourseClassResponse(
         LocalDate startDate,
         LocalDate endDate,
         Integer maxStudents,
+        Integer enrolledCount,
         BigDecimal tuitionFee,
         String status,
         LocalDateTime createdAt,

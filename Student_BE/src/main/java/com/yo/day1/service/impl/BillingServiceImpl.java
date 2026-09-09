@@ -389,10 +389,10 @@ public class BillingServiceImpl implements BillingService {
 
     private BigDecimal calculateDiscount(BigDecimal originalAmount, Promotion promotion) {
         if (promotion.getDiscountType() == DiscountType.PERCENT) {
-            return originalAmount.multiply(BigDecimal.valueOf(promotion.getDiscountValue()))
+            return originalAmount.multiply(promotion.getDiscountValue())
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         }
-        return BigDecimal.valueOf(promotion.getDiscountValue());
+        return promotion.getDiscountValue();
     }
 
     private void createPaymentNotification(TuitionInvoice invoice, BigDecimal amount, PaymentMethod method) {

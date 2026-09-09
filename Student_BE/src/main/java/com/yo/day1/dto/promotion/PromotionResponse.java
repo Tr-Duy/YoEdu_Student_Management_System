@@ -14,7 +14,7 @@ public class PromotionResponse {
     private String promoCode;
     private String name;
     private DiscountType discountType;
-    private float discountValue;
+    private java.math.BigDecimal discountValue;
     private LocalDate startDate;
     private LocalDate endDate;
     private Boolean isActive;
