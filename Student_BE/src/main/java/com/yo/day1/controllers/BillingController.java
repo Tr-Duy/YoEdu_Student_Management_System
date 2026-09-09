@@ -3,6 +3,7 @@ package com.yo.day1.controllers;
 import com.yo.day1.common.ApiResponse;
 import com.yo.day1.common.exception.BadRequestException;
 import com.yo.day1.common.exception.NotFoundExeception;
+import com.yo.day1.domain.enums.InvoiceStatus;
 import com.yo.day1.dto.Billing.*;
 import com.yo.day1.service.BillingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,6 +75,31 @@ public class BillingController {
     @Operation(summary = "Get list of invoices overdue more than 1 month")
     public ApiResponse<List<OverdueWarningResponse>> getOverdueWarnings() {
         return ApiResponse.success(billingService.getOverdueWarnings());
+    }
+
+    @GetMapping("/invoices/search")
+    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF','CASHIER')")
+    @Operation(summary = "Search invoices globally")
+    public ApiResponse<Page<InvoiceResponse>> searchInvoices(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) Long classId,
+            @RequestParam(required = false) InvoiceStatus status,
+            @RequestParam(required = false) String month,
+            Pageable pageable) {
+        return ApiResponse.success(billingService.searchInvoices(search, studentId, classId, status, month, pageable));
+    }
+
+    @GetMapping("/invoices/stats")
+    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF','CASHIER')")
+    @Operation(summary = "Get invoice statistics")
+    public ApiResponse<InvoiceStatsResponse> getInvoiceStats(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) Long classId,
+            @RequestParam(required = false) InvoiceStatus status,
+            @RequestParam(required = false) String month) {
+        return ApiResponse.success(billingService.getInvoiceStats(search, studentId, classId, status, month));
     }
 
 }

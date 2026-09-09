@@ -5,7 +5,9 @@ import type {
   BulkInvoiceRequest,
   PaymentResponse,
   PaymentCreateRequest,
-  OverdueWarningResponse
+  OverdueWarningResponse,
+  InvoiceStatsResponse,
+  PageResponse
 } from '../../types/yoedu';
 
 export const billingApi = {
@@ -31,6 +33,28 @@ export const billingApi = {
 
   getOverdueWarnings: async (): Promise<OverdueWarningResponse[]> => {
     return api.get('/api/billing/invoices/overdue-warnings');
+  },
+
+  searchInvoices: async (params: {
+    page?: number;
+    size?: number;
+    search?: string;
+    studentId?: number;
+    classId?: number;
+    status?: string;
+    month?: string;
+  }): Promise<PageResponse<InvoiceResponse>> => {
+    return api.get('/api/billing/invoices/search', { params });
+  },
+
+  getInvoiceStats: async (params: {
+    search?: string;
+    studentId?: number;
+    classId?: number;
+    status?: string;
+    month?: string;
+  }): Promise<InvoiceStatsResponse> => {
+    return api.get('/api/billing/invoices/stats', { params });
   }
 };
 export default billingApi;

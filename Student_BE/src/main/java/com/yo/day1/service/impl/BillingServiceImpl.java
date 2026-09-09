@@ -8,6 +8,7 @@ import com.yo.day1.domain.enums.InvoiceStatus;
 import com.yo.day1.domain.enums.NotificationRecipientType;
 import com.yo.day1.domain.enums.NotificationType;
 import com.yo.day1.domain.enums.PaymentMethod;
+import com.yo.day1.domain.spec.InvoiceSpec;
 import com.yo.day1.dto.Billing.*;
 import com.yo.day1.repository.*;
 import com.yo.day1.service.AuthService;
@@ -17,6 +18,9 @@ import com.yo.day1.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -213,6 +217,39 @@ public class BillingServiceImpl implements BillingService {
             r.setOverdueDays(ChronoUnit.DAYS.between(i.getDueDate(), LocalDate.now()));
             return r;
         }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<InvoiceResponse> searchInvoices(String search, Long studentId, Long classId, InvoiceStatus status, String month, Pageable pageable) {
+        Specification<TuitionInvoice> spec = InvoiceSpec.filterBy(search, studentId, classId, status, month);
+        return tuitionInvoiceRepository.findAll(spec, pageable).map(this::toInvoiceResponse);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public InvoiceStatsResponse getInvoiceStats(String search, Long studentId, Long classId, InvoiceStatus status, String month) {
+        Specification<TuitionInvoice> spec = InvoiceSpec.filterBy(search, studentId, classId, status, month);
+        List<TuitionInvoice> invoices = tuitionInvoiceRepository.findAll(spec);
+        
+        long count = invoices.size();
+        BigDecimal paid = invoices.stream().map(TuitionInvoice::getAmountPaid).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal unpaid = invoices.stream()
+                .filter(i -> i.getStatus() != InvoiceStatus.PAID)
+                .map(TuitionInvoice::getBalanceAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        LocalDate cutoff = LocalDate.now().minusMonths(1);
+        long overdue = invoices.stream()
+                .filter(i -> i.getStatus() != InvoiceStatus.PAID && i.getDueDate() != null && i.getDueDate().isBefore(cutoff))
+                .count();
+                
+        return InvoiceStatsResponse.builder()
+                .totalInvoicesCount(count)
+                .totalPaidAmount(paid)
+                .totalUnpaidAmount(unpaid)
+                .overdueCount(overdue)
+                .build();
     }
 
     // ---- helpers ----

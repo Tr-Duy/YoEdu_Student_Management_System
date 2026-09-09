@@ -334,6 +334,13 @@ export interface InvoiceResponse extends Auditable {
   note: string;
 }
 
+export interface InvoiceStatsResponse {
+  totalInvoicesCount: number;
+  totalPaidAmount: number;
+  totalUnpaidAmount: number;
+  overdueCount: number;
+}
+
 export interface InvoiceCreateRequest {
   studentId: number;
   courseClassId: number;

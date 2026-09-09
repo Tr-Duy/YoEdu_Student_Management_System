@@ -3,13 +3,14 @@ package com.yo.day1.repository;
 import com.yo.day1.domain.entity.TuitionInvoice;
 import com.yo.day1.domain.enums.InvoiceStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
 
-public interface TuitionInvoiceRepository extends JpaRepository<TuitionInvoice, Long> {
+public interface TuitionInvoiceRepository extends JpaRepository<TuitionInvoice, Long>, JpaSpecificationExecutor<TuitionInvoice> {
 
     List<TuitionInvoice> findByStudentId(Long studentId);
 

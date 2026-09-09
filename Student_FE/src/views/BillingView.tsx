@@ -14,7 +14,12 @@ import {
   ChevronDown,
   Gift,
   AlertTriangle,
-  History
+  History,
+  Search,
+  Filter,
+  RefreshCcw,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { billingApi } from '../features/billing/billing.api';
 import { studentsApi } from '../features/students/students.api';
@@ -45,7 +50,15 @@ export const BillingView: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Search & Filter States
-  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [filters, setFilters] = useState({
+    page: 0,
+    size: 10,
+    search: '',
+    studentId: '',
+    classId: '',
+    status: '',
+    month: ''
+  });
   const [showWarningsOnly, setShowWarningsOnly] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -90,17 +103,37 @@ export const BillingView: React.FC = () => {
     queryFn: async () => promotionsApi.getAll()
   });
 
-  // 4. Fetch Invoices for Selected Student
-  const { data: invoicesData, isLoading: isInvoicesLoading } = useQuery<InvoiceResponse[]>({
-    queryKey: ['invoices-student', selectedStudentId],
+  // 4. Fetch Global Invoices
+  const { data: invoicesData, isLoading: isInvoicesLoading } = useQuery({
+    queryKey: ['invoices-search', filters],
     queryFn: async () => {
-      if (!selectedStudentId) return [];
-      return billingApi.getInvoicesByStudent(selectedStudentId);
-    },
-    enabled: !!selectedStudentId
+      return billingApi.searchInvoices({
+        page: filters.page,
+        size: filters.size,
+        search: filters.search || undefined,
+        studentId: filters.studentId ? Number(filters.studentId) : undefined,
+        classId: filters.classId ? Number(filters.classId) : undefined,
+        status: filters.status || undefined,
+        month: filters.month || undefined
+      });
+    }
   });
 
-  // 5. Fetch Overdue Warnings
+  // 5. Fetch Global Invoice Stats
+  const { data: statsData } = useQuery({
+    queryKey: ['invoices-stats', filters],
+    queryFn: async () => {
+      return billingApi.getInvoiceStats({
+        search: filters.search || undefined,
+        studentId: filters.studentId ? Number(filters.studentId) : undefined,
+        classId: filters.classId ? Number(filters.classId) : undefined,
+        status: filters.status || undefined,
+        month: filters.month || undefined
+      });
+    }
+  });
+
+  // 6. Fetch Overdue Warnings
   const { data: warningsData, isLoading: isWarningsLoading } = useQuery({
     queryKey: ['overdue-warnings'],
     queryFn: async () => billingApi.getOverdueWarnings(),
@@ -128,9 +161,8 @@ export const BillingView: React.FC = () => {
       return billingApi.createInvoice(payload);
     },
     onSuccess: () => {
-      if (selectedStudentId) {
-        queryClient.invalidateQueries({ queryKey: ['invoices-student', selectedStudentId] });
-      }
+      queryClient.invalidateQueries({ queryKey: ['invoices-search'] });
+      queryClient.invalidateQueries({ queryKey: ['invoices-stats'] });
       queryClient.invalidateQueries({ queryKey: ['overdue-warnings'] });
       addToast('Tạo hóa đơn học phí thành công!', 'success');
       setIsCreateOpen(false);
@@ -244,12 +276,12 @@ export const BillingView: React.FC = () => {
   };
 
   // Calculations for Stats
-  const activeStudentInfo = studentsData?.find(s => s.id === selectedStudentId);
-  const activeInvoicesList = invoicesData || [];
+  const activeInvoicesList = invoicesData?.content || [];
+  const totalPages = invoicesData?.totalPages || 0;
   
-  const totalUnpaid = activeInvoicesList.reduce((acc, inv) => acc + (inv.status !== 'PAID' ? inv.balanceAmount : 0), 0);
-  const totalPaid = activeInvoicesList.reduce((acc, inv) => acc + inv.amountPaid, 0);
-  const totalInvoicesCount = activeInvoicesList.length;
+  const totalUnpaid = statsData?.totalUnpaidAmount || 0;
+  const totalPaid = statsData?.totalPaidAmount || 0;
+  const totalInvoicesCount = statsData?.totalInvoicesCount || 0;
 
   return (
     <div className="space-y-6 relative">
@@ -292,7 +324,6 @@ export const BillingView: React.FC = () => {
           <button
             onClick={() => {
               setShowWarningsOnly(!showWarningsOnly);
-              setSelectedStudentId(null);
             }}
             className={`flex items-center justify-center gap-2 rounded-2xl border text-sm font-bold px-5 py-3.5 transition-all cursor-pointer w-full md:w-auto ${
               showWarningsOnly
@@ -307,7 +338,8 @@ export const BillingView: React.FC = () => {
           <button
             onClick={() => {
               setIsCreateOpen(true);
-              setValue('studentId', selectedStudentId ? selectedStudentId.toString() : '');
+              setValue('studentId', filters.studentId);
+              if (filters.classId) setValue('courseClassId', filters.classId);
             }}
             className="flex items-center justify-center gap-2 rounded-2xl bg-brand-600 hover:bg-brand-500 hover:scale-[1.02] active:scale-95 text-white font-bold text-sm px-6 py-3.5 shadow-lg shadow-brand-500/25 transition-all cursor-pointer w-full md:w-auto shrink-0"
           >
@@ -317,37 +349,87 @@ export const BillingView: React.FC = () => {
         </div>
       </div>
 
-      {/* Tra cứu học viên Filter */}
+      {/* Search & Filters */}
       {!showWarningsOnly && (
-        <div className="glass rounded-2xl p-6 border border-white/5 space-y-4">
-          <label className="block text-sm font-semibold text-slate-200">
-            Chọn học viên để xem danh sách hóa đơn học phí:
-          </label>
-          <div className="relative max-w-md">
-            <select
-              value={selectedStudentId || ''}
-              onChange={(e) => {
-                const val = e.target.value ? Number(e.target.value) : null;
-                setSelectedStudentId(val);
-              }}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-100 focus:outline-none focus:border-brand-500 cursor-pointer appearance-none"
-            >
-              <option value="">-- Click chọn Học viên --</option>
-              {studentsData?.map((stu) => (
-                <option key={stu.id} value={stu.id}>
-                  {stu.fullName} ({stu.studentCode}) - Lớp {stu.gradeLevel}
-                </option>
-              ))}
-            </select>
-            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400">
-              <ChevronDown size={18} />
+        <div className="glass rounded-3xl p-5 border border-white/5 shadow-lg space-y-4 animate-fade-in">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                type="text"
+                placeholder="Tìm mã hóa đơn, tên học viên, mã học viên..."
+                value={filters.search}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 0 }))}
+                className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-slate-100 focus:outline-none focus:border-brand-500"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3 overflow-x-auto pb-1 md:pb-0">
+              <div className="relative shrink-0">
+                <select
+                  value={filters.studentId}
+                  onChange={(e) => setFilters(prev => ({ ...prev, studentId: e.target.value, page: 0 }))}
+                  className="bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-10 text-sm text-slate-100 focus:outline-none focus:border-brand-500 appearance-none cursor-pointer"
+                >
+                  <option value="">-- Tất cả Học viên --</option>
+                  {studentsData?.map((stu) => (
+                    <option key={stu.id} value={stu.id}>{stu.fullName} ({stu.studentCode})</option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
+
+              <div className="relative shrink-0">
+                <select
+                  value={filters.classId}
+                  onChange={(e) => setFilters(prev => ({ ...prev, classId: e.target.value, page: 0 }))}
+                  className="bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-10 text-sm text-slate-100 focus:outline-none focus:border-brand-500 appearance-none cursor-pointer"
+                >
+                  <option value="">-- Tất cả Lớp học --</option>
+                  {classesData?.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
+
+              <div className="relative shrink-0">
+                <select
+                  value={filters.status}
+                  onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value, page: 0 }))}
+                  className="bg-slate-900 border border-slate-800 rounded-xl py-3 pl-4 pr-10 text-sm text-slate-100 focus:outline-none focus:border-brand-500 appearance-none cursor-pointer"
+                >
+                  <option value="">-- Trạng thái --</option>
+                  <option value="UNPAID">Chưa thanh toán</option>
+                  <option value="PAID">Đã thanh toán</option>
+                  <option value="PARTIAL">Trạng thái Nợ (Partial)</option>
+                  <option value="OVERPAID">Đóng dư</option>
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
+
+              <div className="relative shrink-0">
+                <input
+                  type="month"
+                  value={filters.month}
+                  onChange={(e) => setFilters(prev => ({ ...prev, month: e.target.value, page: 0 }))}
+                  className="bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-100 focus:outline-none focus:border-brand-500 cursor-pointer"
+                />
+              </div>
+
+              <button
+                onClick={() => setFilters({ page: 0, size: 10, search: '', studentId: '', classId: '', status: '', month: '' })}
+                className="shrink-0 flex items-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold transition-all border border-slate-700"
+              >
+                <RefreshCcw size={16} /> Xóa lọc
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {/* Tra cứu Stats summary card */}
-      {selectedStudentId && !showWarningsOnly && (
+      {!showWarningsOnly && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
           <div className="glass rounded-2xl p-5 border border-white/5 flex items-center justify-between">
             <div>
@@ -388,9 +470,7 @@ export const BillingView: React.FC = () => {
           <div>
             <div className="px-6 py-5 border-b border-slate-800 bg-slate-900/30 flex items-center justify-between">
               <h3 className="font-bold text-slate-100 text-base">
-                {selectedStudentId 
-                  ? `Hóa đơn học phí học viên: ${activeStudentInfo?.fullName || ''}`
-                  : 'Vui lòng chọn học viên ở trên để tra cứu danh sách hóa đơn'}
+                Danh sách hóa đơn
               </h3>
             </div>
 
@@ -428,23 +508,17 @@ export const BillingView: React.FC = () => {
                     ))
                   )}
 
-                  {!selectedStudentId && (
+                  {!isInvoicesLoading && activeInvoicesList.length === 0 && (
                     <tr>
                       <td colSpan={10} className="py-16 text-center text-slate-500">
-                        Vui lòng lựa chọn học viên ở danh sách lọc phía trên để hiển thị dữ liệu hóa đơn học tập.
+                        {filters.search || filters.studentId || filters.classId || filters.status || filters.month
+                          ? 'Không tìm thấy hóa đơn phù hợp với bộ lọc.'
+                          : 'Chưa có hóa đơn nào.'}
                       </td>
                     </tr>
                   )}
 
-                  {selectedStudentId && !isInvoicesLoading && activeInvoicesList.length === 0 && (
-                    <tr>
-                      <td colSpan={10} className="py-16 text-center text-slate-500">
-                        Chưa ghi nhận hóa đơn học phí nào cho học viên này.
-                      </td>
-                    </tr>
-                  )}
-
-                  {selectedStudentId && !isInvoicesLoading && activeInvoicesList.map((inv) => (
+                  {!isInvoicesLoading && activeInvoicesList.map((inv) => (
                     <tr key={inv.id} className="hover:bg-slate-900/25 transition-all duration-150">
                       <td className="py-4 px-6 font-mono font-bold text-brand-400 text-xs">
                         {inv.invoiceCode}
@@ -499,6 +573,31 @@ export const BillingView: React.FC = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/30 flex items-center justify-between">
+                <span className="text-sm text-slate-400">
+                  Trang {filters.page + 1} / {totalPages}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    disabled={filters.page === 0}
+                    onClick={() => setFilters(prev => ({ ...prev, page: prev.page - 1 }))}
+                    className="p-2 rounded-lg bg-slate-800 text-slate-300 disabled:opacity-50 hover:bg-slate-700 transition-colors"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    disabled={filters.page >= totalPages - 1}
+                    onClick={() => setFilters(prev => ({ ...prev, page: prev.page + 1 }))}
+                    className="p-2 rounded-lg bg-slate-800 text-slate-300 disabled:opacity-50 hover:bg-slate-700 transition-colors"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           // Overdue Warnings View
