@@ -1,6 +1,8 @@
 package com.yo.day1.domain.entity;
 
 import com.yo.day1.domain.AuditableEntity;
+import com.yo.day1.domain.enums.GradeClassification;
+import com.yo.day1.domain.enums.GradeStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,4 +37,12 @@ public class LearningResult extends AuditableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id")
     private Users createdByUser;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "classification", length = 20)
+    private GradeClassification classification;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private GradeStatus status = GradeStatus.LOCKED;
 }

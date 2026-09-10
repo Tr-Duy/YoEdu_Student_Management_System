@@ -16,6 +16,9 @@ public class LearningResultResponse {
     LocalDate resultMonth;
     BigDecimal score;
     String teacherComment;
+    com.yo.day1.domain.enums.GradeClassification classification;
+    com.yo.day1.domain.enums.GradeStatus status;
+    Double attendanceRate;
     Long createdByUserId;
     String createdByUsername;
     LocalDateTime createdAt;

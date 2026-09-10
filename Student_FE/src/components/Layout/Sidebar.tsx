@@ -18,7 +18,8 @@ import {
   BarChart3,
   UserCheck,
   LogOut,
-  X
+  X,
+  Award
 } from 'lucide-react';
 import { ThemeSwitcher } from '../ui/ThemeSwitcher';
 
@@ -59,6 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         { path: '/courses', label: 'Môn học', icon: BookOpen, roles: ['ADMIN', 'ACADEMIC_STAFF'] },
         { path: '/classes', label: 'Lớp học', icon: School, roles: ['ADMIN', 'ACADEMIC_STAFF'] },
         { path: '/enrollments', label: 'Đăng ký học', icon: UserPlus, roles: ['ADMIN', 'ACADEMIC_STAFF'] },
+        { path: '/grades', label: 'Quản lý điểm', icon: Award, roles: ['ADMIN', 'ACADEMIC_STAFF'] },
       ]
     },
     {

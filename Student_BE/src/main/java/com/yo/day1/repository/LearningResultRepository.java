@@ -41,4 +41,26 @@ public interface LearningResultRepository extends JpaRepository<LearningResult, 
     List<Object[]> learningResultSummary(@Param("year") int year,
                                          @Param("month") int month,
                                          @Param("classId") Long classId);
+
+    @Query("""
+            SELECT r FROM LearningResult r
+            WHERE (:studentName IS NULL OR LOWER(r.student.fullName) LIKE LOWER(CONCAT('%', :studentName, '%')))
+              AND (:courseClassId IS NULL OR r.courseClass.id = :courseClassId)
+              AND (:courseId IS NULL OR r.courseClass.course.id = :courseId)
+              AND (:teacherId IS NULL OR r.courseClass.mainTeacher.id = :teacherId OR r.courseClass.assistantTeacher.id = :teacherId)
+              AND (:year IS NULL OR YEAR(r.resultMonth) = :year)
+              AND (:month IS NULL OR MONTH(r.resultMonth) = :month)
+              AND (:classification IS NULL OR r.classification = :classification)
+              AND (:status IS NULL OR r.status = :status)
+            ORDER BY r.resultMonth DESC, r.student.fullName ASC
+            """)
+    List<LearningResult> searchLearningResults(
+            @Param("studentName") String studentName,
+            @Param("courseClassId") Long courseClassId,
+            @Param("courseId") Long courseId,
+            @Param("teacherId") Long teacherId,
+            @Param("year") Integer year,
+            @Param("month") Integer month,
+            @Param("classification") com.yo.day1.domain.enums.GradeClassification classification,
+            @Param("status") com.yo.day1.domain.enums.GradeStatus status);
 }

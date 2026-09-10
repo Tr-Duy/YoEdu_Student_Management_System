@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -20,6 +21,7 @@ import { RoomsView } from './views/RoomsView';
 import { ScheduleSlotsView } from './views/ScheduleSlotsView';
 import { ReportsView } from './views/ReportsView';
 import { ParentPortalView } from './views/ParentPortalView';
+import GradesView from './views/GradesView';
 
 // Initialize React Query Client
 const queryClient = new QueryClient({
@@ -128,6 +130,14 @@ const AppRouter: React.FC = () => {
             </RoleGuard>
           }
         />
+        <Route
+          path="grades"
+          element={
+            <RoleGuard allowedRoles={['ADMIN', 'ACADEMIC_STAFF']}>
+              <GradesView />
+            </RoleGuard>
+          }
+        />
 
         {/* Billing & Cashier Routes */}
         <Route
@@ -197,6 +207,7 @@ export const App: React.FC = () => {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
+        <Toaster position="top-right" />
         <BrowserRouter>
           <AuthProvider>
             <AppRouter />

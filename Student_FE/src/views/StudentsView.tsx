@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import {
-  Search, Plus, Edit, Trash2, Eye, Mail, Phone, MapPin, Calendar, Activity, X
+  Search, Plus, Edit, Trash2, Eye, Mail, Phone, MapPin, Calendar, Activity, X, Award
 } from 'lucide-react';
 import { studentsApi } from '../features/students/students.api';
 import { api } from '../lib/api';
@@ -18,6 +18,7 @@ import { Modal } from '../components/ui/Modal';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { StudentGradesModal } from '../components/StudentGradesModal';
 
 // ==========================================
 // FORM VALIDATION SCHEMA WITH ZOD
@@ -57,6 +58,7 @@ export const StudentsView: React.FC = () => {
 
   const [isUpsertOpen, setIsUpsertOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isGradesOpen, setIsGradesOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentResponse | null>(null);
   const [editingStudentId, setEditingStudentId] = useState<number | null>(null);
@@ -266,6 +268,7 @@ export const StudentsView: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" title="Kết quả học tập" onClick={() => { setSelectedStudent(student); setIsGradesOpen(true); }}><Award size={16}/></Button>
                       <Button variant="ghost" size="sm" onClick={() => { setSelectedStudent(student); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
                       <Button variant="ghost" size="sm" onClick={() => handleEditClick(student)}><Edit size={16}/></Button>
                       <Button variant="ghost" size="sm" className="text-rose-600 dark:text-rose-400 hover:text-rose-500" onClick={() => { setSelectedStudent(student); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
@@ -376,9 +379,15 @@ export const StudentsView: React.FC = () => {
         onClose={() => setIsConfirmDeleteOpen(false)}
         onConfirm={() => selectedStudent && deleteMutation.mutate(selectedStudent.id)}
         title="Xóa học viên"
-        description="Bạn có chắc chắn muốn xóa học viên này? Hành động này không thể hoàn tác."
+        description={`Bạn có chắc chắn muốn xóa học viên ${selectedStudent?.fullName}? Hành động này không thể hoàn tác.`}
         isDanger
         isLoading={deleteMutation.isPending}
+      />
+
+      <StudentGradesModal
+        isOpen={isGradesOpen}
+        onClose={() => setIsGradesOpen(false)}
+        studentName={selectedStudent?.fullName || null}
       />
     </div>
   );

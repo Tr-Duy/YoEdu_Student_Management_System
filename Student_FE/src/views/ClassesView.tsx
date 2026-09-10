@@ -19,6 +19,8 @@ import { Modal } from '../components/ui/Modal';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/Table';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { ClassGradesModal } from '../components/ClassGradesModal';
+import { Award } from 'lucide-react';
 
 // ==========================================
 // FORM VALIDATION SCHEMA WITH ZOD
@@ -51,6 +53,7 @@ export const ClassesView: React.FC = () => {
 
   const [isUpsertOpen, setIsUpsertOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isGradesOpen, setIsGradesOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<CourseClassResponse | null>(null);
   const [editingClassId, setEditingClassId] = useState<number | null>(null);
@@ -263,6 +266,7 @@ export const ClassesView: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" title="Bảng điểm" onClick={() => { setSelectedClass(c); setIsGradesOpen(true); }}><Award size={16}/></Button>
                       <Button variant="ghost" size="sm" onClick={() => { setSelectedClass(c); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
                       <Button variant="ghost" size="sm" onClick={() => handleEditClick(c)}><Edit size={16}/></Button>
                       <Button variant="ghost" size="sm" className="text-rose-600 dark:text-rose-400 hover:text-rose-500" onClick={() => { setSelectedClass(c); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
@@ -389,6 +393,13 @@ export const ClassesView: React.FC = () => {
         description="Bạn có chắc chắn muốn xóa lớp học này? Hành động này sẽ ảnh hưởng đến các học viên đã đăng ký vào lớp."
         isDanger
         isLoading={deleteMutation.isPending}
+      />
+
+      <ClassGradesModal 
+        isOpen={isGradesOpen} 
+        onClose={() => setIsGradesOpen(false)} 
+        classId={selectedClass?.id || null} 
+        className={selectedClass?.name || ''} 
       />
     </div>
   );

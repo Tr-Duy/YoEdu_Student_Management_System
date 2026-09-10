@@ -4,6 +4,7 @@ import com.yo.day1.common.ApiResponse;
 import com.yo.day1.dto.learning.LearningResultCreateRequest;
 import com.yo.day1.dto.learning.LearningResultResponse;
 import com.yo.day1.dto.learning.LearningResultUpdateRequest;
+import com.yo.day1.dto.learning.LearningResultSearchRequest;
 import com.yo.day1.service.LearningResultService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -47,5 +48,32 @@ public class LearningResultController {
             @RequestParam int year,
             @RequestParam int month) {
         return ApiResponse.success(learningResultService.findByClassAndMonth(classId, year, month));
+    }
+
+    @PostMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF')")
+    public ApiResponse<List<LearningResultResponse>> search(@RequestBody LearningResultSearchRequest request, Principal principal) {
+        return ApiResponse.success(learningResultService.search(request, principal.getName()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF')")
+    public ApiResponse<Void> delete(@PathVariable Long id, Principal principal) {
+        learningResultService.delete(id, principal.getName());
+        return ApiResponse.success(null, "Deleted");
+    }
+
+    @PatchMapping("/{id}/lock")
+    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF')")
+    public ApiResponse<Void> lock(@PathVariable Long id, Principal principal) {
+        learningResultService.lock(id, principal.getName());
+        return ApiResponse.success(null, "Locked");
+    }
+
+    @PatchMapping("/{id}/unlock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Void> unlock(@PathVariable Long id, Principal principal) {
+        learningResultService.unlock(id, principal.getName());
+        return ApiResponse.success(null, "Unlocked");
     }
 }
