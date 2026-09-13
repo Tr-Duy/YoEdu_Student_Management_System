@@ -161,7 +161,18 @@ public class CourseClassServiceImpl implements CourseClassService {
         c.setEndDate(r.endDate());
         c.setMaxStudents(r.maxStudents());
         c.setTuitionFee(r.tuitionFee());
-        c.setStatus(r.status());
+
+        ClassStatus desiredStatus = r.status();
+        int max = r.maxStudents() != null ? r.maxStudents() : 20;
+        long currentActive = (c.getId() != null && enrollmentRepository != null)
+                ? enrollmentRepository.countByCourseClassIdAndStatus(c.getId(), com.yo.day1.domain.enums.EnrollmentStatus.ACTIVE)
+                : 0;
+        if (desiredStatus == ClassStatus.FULL && currentActive < max) {
+            desiredStatus = ClassStatus.OPEN;
+        } else if (desiredStatus == ClassStatus.OPEN && max > 0 && currentActive >= max) {
+            desiredStatus = ClassStatus.FULL;
+        }
+        c.setStatus(desiredStatus != null ? desiredStatus : ClassStatus.OPEN);
     }
 
     private void validateScheduleConflicts(CourseClass c, Long excludeClassId) {
@@ -195,6 +206,14 @@ public class CourseClassServiceImpl implements CourseClassService {
         int enrolledCount = enrollmentRepository != null ? 
             (int) enrollmentRepository.countByCourseClassIdAndStatus(c.getId(), com.yo.day1.domain.enums.EnrollmentStatus.ACTIVE) : 0;
             
+        ClassStatus effectiveStatus = c.getStatus();
+        int max = c.getMaxStudents() != null ? c.getMaxStudents() : 0;
+        if (effectiveStatus == ClassStatus.FULL && enrolledCount < max) {
+            effectiveStatus = ClassStatus.OPEN;
+        } else if (effectiveStatus == ClassStatus.OPEN && max > 0 && enrolledCount >= max) {
+            effectiveStatus = ClassStatus.FULL;
+        }
+
         return new CourseClassResponse(
                 c.getId(),
                 c.getClassCode(),
@@ -214,7 +233,7 @@ public class CourseClassServiceImpl implements CourseClassService {
                 c.getMaxStudents(),
                 enrolledCount,
                 c.getTuitionFee(),
-                c.getStatus() != null ? c.getStatus().name() : null,
+                effectiveStatus != null ? effectiveStatus.name() : null,
                 c.getCreatedAt(),
                 c.getUpdatedAt()
         );

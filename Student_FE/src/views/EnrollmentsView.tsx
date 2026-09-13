@@ -85,6 +85,10 @@ export const EnrollmentsView: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['class-enrollments'] });
       queryClient.invalidateQueries({ queryKey: ['student-enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['courseClasses'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollment-classes'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-lookup'] });
       setIsEnrollOpen(false);
     }
   });
@@ -101,6 +105,10 @@ export const EnrollmentsView: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['class-enrollments'] });
       queryClient.invalidateQueries({ queryKey: ['student-enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['courseClasses'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollment-classes'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-lookup'] });
       setIsTransferOpen(false);
     }
   });
@@ -110,6 +118,10 @@ export const EnrollmentsView: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['class-enrollments'] });
       queryClient.invalidateQueries({ queryKey: ['student-enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['courseClasses'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollment-classes'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-lookup'] });
       setIsConfirmDropOpen(false);
     }
   });

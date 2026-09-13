@@ -51,8 +51,21 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (courseClass.getStatus() == ClassStatus.CLOSED) {
             throw new BadRequestException("Lớp học đã đóng, không thể đăng ký");
         }
-        if (courseClass.getStatus() == ClassStatus.FULL) {
-            throw new ConflictException("Lớp học đã đầy, không thể đăng ký");
+
+        long activeCount = enrollmentRepository.countByCourseClassIdAndStatus(
+                request.getCourseClassId(), EnrollmentStatus.ACTIVE);
+        if (activeCount >= courseClass.getMaxStudents()) {
+            if (courseClass.getStatus() != ClassStatus.FULL) {
+                courseClass.setStatus(ClassStatus.FULL);
+                courseClassRepository.save(courseClass);
+            }
+            throw new ConflictException(String.format("Không thể đăng ký: lớp %s đã đủ sĩ số tối đa (%d học viên).",
+                    courseClass.getClassCode(), courseClass.getMaxStudents()));
+        }
+
+        if (courseClass.getStatus() == ClassStatus.FULL && activeCount < courseClass.getMaxStudents()) {
+            courseClass.setStatus(ClassStatus.OPEN);
+            courseClassRepository.save(courseClass);
         }
 
         Student student = studentService.getStudent(request.getStudentId());
@@ -65,13 +78,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (existingOpt.isPresent() && existingOpt.get().getStatus() == EnrollmentStatus.ACTIVE) {
             throw new ConflictException("Học viên đã đăng ký và đang học tại lớp này.");
-        }
-
-        long activeCount = enrollmentRepository.countByCourseClassIdAndStatus(
-                request.getCourseClassId(), EnrollmentStatus.ACTIVE);
-        if (activeCount >= courseClass.getMaxStudents()) {
-            throw new ConflictException(String.format("Không thể đăng ký: lớp %s đã đủ sĩ số tối đa (%d học viên).",
-                    courseClass.getClassCode(), courseClass.getMaxStudents()));
         }
 
         String conflictMsg = scheduleConflictService.getStudentConflictMessage(
@@ -128,7 +134,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Enrollment saved = enrollmentRepository.save(enrollment);
 
         CourseClass courseClass = enrollment.getCourseClass();
-        if (courseClass.getStatus() == ClassStatus.FULL) {
+        long remainingActive = enrollmentRepository.countByCourseClassIdAndStatus(courseClass.getId(), EnrollmentStatus.ACTIVE);
+        if (courseClass.getStatus() == ClassStatus.FULL && remainingActive < courseClass.getMaxStudents()) {
             courseClass.setStatus(ClassStatus.OPEN);
             courseClassRepository.save(courseClass);
         }
@@ -179,8 +186,21 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (toClass.getStatus() == ClassStatus.CLOSED) {
             throw new BadRequestException("Lớp đích đã đóng");
         }
-        if (toClass.getStatus() == ClassStatus.FULL) {
-            throw new ConflictException("Lớp đích đã đầy");
+
+        long activeCount = enrollmentRepository.countByCourseClassIdAndStatus(
+                request.toClassId(), EnrollmentStatus.ACTIVE);
+        if (activeCount >= toClass.getMaxStudents()) {
+            if (toClass.getStatus() != ClassStatus.FULL) {
+                toClass.setStatus(ClassStatus.FULL);
+                courseClassRepository.save(toClass);
+            }
+            throw new ConflictException(String.format("Lớp đích %s đã đủ sĩ số tối đa (%d học viên)",
+                    toClass.getClassCode(), toClass.getMaxStudents()));
+        }
+
+        if (toClass.getStatus() == ClassStatus.FULL && activeCount < toClass.getMaxStudents()) {
+            toClass.setStatus(ClassStatus.OPEN);
+            courseClassRepository.save(toClass);
         }
 
         Optional<Enrollment> existingToOpt = enrollmentRepository.findByStudentIdAndCourseClassId(
@@ -188,13 +208,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (existingToOpt.isPresent() && existingToOpt.get().getStatus() == EnrollmentStatus.ACTIVE) {
             throw new ConflictException("Học viên đã đăng ký và đang học tại lớp đích");
-        }
-
-        long activeCount = enrollmentRepository.countByCourseClassIdAndStatus(
-                request.toClassId(), EnrollmentStatus.ACTIVE);
-        if (activeCount >= toClass.getMaxStudents()) {
-            throw new ConflictException(String.format("Lớp đích %s đã đủ sĩ số tối đa (%d học viên)",
-                    toClass.getClassCode(), toClass.getMaxStudents()));
         }
 
         String conflictMsg = scheduleConflictService.getStudentConflictMessage(
@@ -213,7 +226,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 + (request.reason() != null ? " - " + request.reason() : ""));
         enrollmentRepository.save(current);
 
-        if (fromClass.getStatus() == ClassStatus.FULL) {
+        long fromRemaining = enrollmentRepository.countByCourseClassIdAndStatus(fromClass.getId(), EnrollmentStatus.ACTIVE);
+        if (fromClass.getStatus() == ClassStatus.FULL && fromRemaining < fromClass.getMaxStudents()) {
             fromClass.setStatus(ClassStatus.OPEN);
             courseClassRepository.save(fromClass);
         }

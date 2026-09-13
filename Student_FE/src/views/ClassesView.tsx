@@ -104,6 +104,9 @@ export const ClassesView: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courseClasses'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollment-classes'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-lookup'] });
       setIsUpsertOpen(false);
     }
   });
@@ -112,6 +115,9 @@ export const ClassesView: React.FC = () => {
     mutationFn: async (id: number) => classesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courseClasses'] });
+      queryClient.invalidateQueries({ queryKey: ['enrollment-classes'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-list'] });
+      queryClient.invalidateQueries({ queryKey: ['classes-lookup'] });
       setIsConfirmDeleteOpen(false);
     }
   });
@@ -128,30 +134,33 @@ export const ClassesView: React.FC = () => {
   });
 
   const onSubmitForm = (values: ClassFormValues) => {
-    if (!values.courseId || !values.roomId || !values.scheduleSlotId || !values.mainTeacherId) return;
-    const maxStd = Number(values.maxStudents);
-    const fee = Number(values.tuitionFee);
-    if (isNaN(maxStd) || maxStd <= 0 || isNaN(fee) || fee < 0) return;
     upsertMutation.mutate(values);
   };
 
   const handleEditClick = (c: CourseClassResponse) => {
     setEditingClassId(c.id);
     reset({
-      classCode: c.classCode, name: c.name, courseId: c.course.id, roomId: c.room.id,
-      scheduleSlotId: c.scheduleSlot.id, mainTeacherId: c.mainTeacher.id,
-      assistantTeacherId: c.assistantTeacher?.id || 'null',
-      startDate: c.startDate, endDate: c.endDate, maxStudents: c.maxStudents,
-      tuitionFee: c.tuitionFee, status: c.status,
+      classCode: c.classCode,
+      name: c.name,
+      courseId: String(c.courseId || (c as any).course?.id || ''),
+      roomId: String(c.roomId || (c as any).room?.id || ''),
+      scheduleSlotId: String(c.scheduleSlotId || (c as any).scheduleSlot?.id || ''),
+      mainTeacherId: String(c.mainTeacherId || (c as any).mainTeacher?.id || ''),
+      assistantTeacherId: String(c.assistantTeacherId || (c as any).assistantTeacher?.id || 'null'),
+      startDate: c.startDate,
+      endDate: c.endDate,
+      maxStudents: c.maxStudents,
+      tuitionFee: c.tuitionFee,
+      status: c.status,
     });
     setIsUpsertOpen(true);
   };
 
-  const handleCreateClick = () => {
+  const handleOpenAdd = () => {
     setEditingClassId(null);
     reset({
-      classCode: `LH${Math.floor(100 + Math.random() * 900)}`, name: '', courseId: '', roomId: '',
-      scheduleSlotId: '', mainTeacherId: '', assistantTeacherId: 'null',
+      classCode: '', name: '', courseId: '', roomId: '', scheduleSlotId: '',
+      mainTeacherId: '', assistantTeacherId: 'null',
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       maxStudents: 20, tuitionFee: 1500000, status: 'OPEN',
@@ -166,34 +175,35 @@ export const ClassesView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">Quản lý Lớp học</h2>
-          <p className="text-sm text-foreground-muted mt-1">Lên lịch, sắp xếp phòng học và phân công giáo viên.</p>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Quản lý Lớp học</h2>
+          <p className="text-foreground-muted text-sm mt-1">Lập kế hoạch tổ chức lớp, phân công giảng viên và quản lý sĩ số.</p>
         </div>
-        <Button onClick={handleCreateClick} className="gap-2">
-          <Plus size={16} /> Thêm Lớp học
-        </Button>
+        <Button variant="primary" icon={<Plus size={16} />} onClick={handleOpenAdd}>Thêm Lớp Học</Button>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-surface border border-border p-4 rounded-xl shadow-sm transition-colors">
-        <div className="relative w-full md:w-96">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted" />
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-muted pointer-events-none" size={16} />
           <input
             type="text"
+            placeholder="Tìm theo mã lớp, tên lớp..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Tìm theo mã hoặc tên lớp..."
-            className="w-full bg-surface border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-brand-500 focus:outline-none transition-colors"
+            className="w-full pl-10 pr-4 py-2 bg-surface border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all placeholder:text-foreground-muted/60"
           />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
-          {['ALL', 'OPEN', 'ONGOING', 'CLOSED', 'FULL'].map((filter) => (
+
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          {(['ALL', 'OPEN', 'ONGOING', 'CLOSED', 'FULL'] as const).map((filter) => (
             <button
               key={filter}
               onClick={() => { setStatusFilter(filter); setPage(0); }}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                statusFilter === filter ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400 font-semibold' : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                statusFilter === filter
+                  ? 'bg-brand-600 text-white shadow-sm'
+                  : 'bg-surface border border-border text-foreground-secondary hover:bg-surface-hover hover:text-foreground'
               }`}
             >
               {filter === 'ALL' && 'Tất cả'}
@@ -229,51 +239,86 @@ export const ClassesView: React.FC = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              classesList.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{c.classCode}</TableCell>
-                  <TableCell>
-                    <div className="font-medium text-foreground">{c.name}</div>
-                    <div className="text-xs text-foreground-muted mt-0.5">{c.courseName || (c as any).course?.name || 'N/A'}</div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm text-foreground-secondary flex items-center gap-1.5">
-                      <Clock size={12}/>
-                      {c.scheduleLabel || ((c as any).scheduleSlot ? `${(c as any).scheduleSlot.dayOfWeek} (${(c as any).scheduleSlot.startTime?.slice(0,5)} - ${(c as any).scheduleSlot.endTime?.slice(0,5)})` : 'Chưa xếp lịch')}
-                    </div>
-                    <div className="text-xs text-foreground-muted flex items-center gap-1.5 mt-0.5">
-                      <DoorOpen size={12}/>Phòng: {c.roomName || (c as any).room?.name || 'N/A'}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm text-foreground-secondary flex items-center gap-1.5">
-                      <UserCheck size={12}/>GV: {c.mainTeacherName || (c as any).mainTeacher?.fullName || 'Chưa gán'}
-                    </div>
-                    {(c.assistantTeacherName || (c as any).assistantTeacher) && (
-                      <div className="text-xs text-foreground-muted flex items-center gap-1.5 mt-0.5">
-                        <UserCheck size={12}/>TG: {c.assistantTeacherName || (c as any).assistantTeacher?.fullName}
+              classesList.map((c) => {
+                const enrolled = c.enrolledCount || 0;
+                const max = c.maxStudents || 0;
+                const isOverCapacity = max > 0 && enrolled > max;
+                const isFull = max > 0 && enrolled >= max;
+
+                return (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-mono text-brand-600 dark:text-brand-400 font-medium">{c.classCode}</TableCell>
+                    <TableCell>
+                      <div className="font-medium text-foreground">{c.name}</div>
+                      <div className="text-xs text-foreground-muted mt-0.5">{c.courseName || (c as any).course?.name || 'N/A'}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-foreground-secondary flex items-center gap-1.5">
+                        <Clock size={12}/>
+                        {c.scheduleLabel || ((c as any).scheduleSlot ? `${(c as any).scheduleSlot.dayOfWeek} (${(c as any).scheduleSlot.startTime?.slice(0,5)} - ${(c as any).scheduleSlot.endTime?.slice(0,5)})` : 'Chưa xếp lịch')}
                       </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm text-foreground-secondary">{c.enrolledCount || 0} / {c.maxStudents}</div>
-                    <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{formatVND(c.tuitionFee)}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={c.status === 'OPEN' ? 'success' : c.status === 'ONGOING' ? 'info' : c.status === 'FULL' ? 'warning' : 'danger'}>
-                      {c.status === 'OPEN' ? 'Mở đăng ký' : c.status === 'ONGOING' ? 'Đang học' : c.status === 'FULL' ? 'Đã đầy' : 'Đã đóng'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm" title="Bảng điểm" onClick={() => { setSelectedClass(c); setIsGradesOpen(true); }}><Award size={16}/></Button>
-                      <Button variant="ghost" size="sm" onClick={() => { setSelectedClass(c); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleEditClick(c)}><Edit size={16}/></Button>
-                      <Button variant="ghost" size="sm" className="text-rose-600 dark:text-rose-400 hover:text-rose-500" onClick={() => { setSelectedClass(c); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                      <div className="text-xs text-foreground-muted flex items-center gap-1.5 mt-0.5">
+                        <DoorOpen size={12}/>Phòng: {c.roomName || (c as any).room?.name || 'N/A'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-foreground-secondary flex items-center gap-1.5">
+                        <UserCheck size={12}/>GV: {c.mainTeacherName || (c as any).mainTeacher?.fullName || 'Chưa gán'}
+                      </div>
+                      {(c.assistantTeacherName || (c as any).assistantTeacher) && (
+                        <div className="text-xs text-foreground-muted flex items-center gap-1.5 mt-0.5">
+                          <UserCheck size={12}/>TG: {c.assistantTeacherName || (c as any).assistantTeacher?.fullName}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm flex items-center gap-1.5">
+                        <span className={isOverCapacity ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-foreground-secondary font-medium'}>
+                          {enrolled} / {max}
+                        </span>
+                        {isOverCapacity && (
+                          <span className="text-[10px] bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 px-1.5 py-0.5 rounded font-semibold" title="Sĩ số vượt quá sức chứa tối đa!">
+                            Lỗi sĩ số
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 font-medium">{formatVND(c.tuitionFee)}</div>
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        if (c.status === 'CLOSED') {
+                          return <Badge variant="danger">Đã đóng</Badge>;
+                        }
+                        if (c.status === 'ONGOING') {
+                          return (
+                            <div className="flex flex-col gap-1 items-start">
+                              <Badge variant="info">Đang học</Badge>
+                              {isFull && (
+                                <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded">
+                                  Đã đầy sĩ số
+                                </span>
+                              )}
+                            </div>
+                          );
+                        }
+                        // For OPEN or FULL: ONLY display 'Đã đầy' if actually full (enrolled >= max)
+                        if (isFull) {
+                          return <Badge variant="warning">Đã đầy</Badge>;
+                        }
+                        return <Badge variant="success">Mở đăng ký</Badge>;
+                      })()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" title="Bảng điểm" onClick={() => { setSelectedClass(c); setIsGradesOpen(true); }}><Award size={16}/></Button>
+                        <Button variant="ghost" size="sm" onClick={() => { setSelectedClass(c); setIsDetailsOpen(true); }}><Eye size={16}/></Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEditClick(c)}><Edit size={16}/></Button>
+                        <Button variant="ghost" size="sm" className="text-rose-600 dark:text-rose-400 hover:text-rose-500" onClick={() => { setSelectedClass(c); setIsConfirmDeleteOpen(true); }}><Trash2 size={16}/></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
