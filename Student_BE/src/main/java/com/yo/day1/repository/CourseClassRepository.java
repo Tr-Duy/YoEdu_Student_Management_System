@@ -15,6 +15,9 @@ public interface CourseClassRepository extends JpaRepository<CourseClass, Long>,
     List<CourseClass> findByCourseId(Long courseId);
 
     boolean existsByClassCode(String classCode);
+    boolean existsByRoomId(Long roomId);
+    boolean existsByScheduleSlotId(Long scheduleSlotId);
+    boolean existsByCourseId(Long courseId);
 
     @Query("""
             SELECT cc FROM CourseClass cc

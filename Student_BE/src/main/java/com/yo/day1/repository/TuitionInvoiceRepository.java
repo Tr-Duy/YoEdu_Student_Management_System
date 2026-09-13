@@ -20,6 +20,10 @@ public interface TuitionInvoiceRepository extends JpaRepository<TuitionInvoice, 
 
     boolean existsByInvoiceCode(String invoiceCode);
 
+    boolean existsByPromotionId(Long promotionId);
+
+    boolean existsByCourseClassId(Long courseClassId);
+
     @Query("SELECT i FROM TuitionInvoice i WHERE i.status <> 'PAID' AND i.dueDate < :cutoff ORDER BY i.dueDate ASC")
     List<TuitionInvoice> findOverdue(@Param("cutoff") LocalDate cutoff);
 

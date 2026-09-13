@@ -16,6 +16,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,17 +52,67 @@ public class TeacherServiceImpl implements TeacherService {
                 .map(t -> mapper.map(t, TeacherResponse.class));
     }
 
+    @Transactional
     @Override
     public TeacherResponse save(TeacherUpsertRequest req) {
+        if (req.getTeacherCode() == null || req.getTeacherCode().trim().isEmpty()) {
+            throw new com.yo.day1.common.exception.BadRequestException("Mã giáo viên không được để trống");
+        }
+        if (req.getFullName() == null || req.getFullName().trim().isEmpty()) {
+            throw new com.yo.day1.common.exception.BadRequestException("Họ tên giáo viên không được để trống");
+        }
+        if (req.getPhone() == null || req.getPhone().trim().isEmpty()) {
+            throw new com.yo.day1.common.exception.BadRequestException("Số điện thoại giáo viên không được để trống");
+        }
+
+        String code = req.getTeacherCode().trim();
+        String phone = req.getPhone().trim();
+        if (teacherRepository.existsByTeacherCode(code)) {
+            throw new ConflictException("Mã giáo viên đã tồn tại: " + code);
+        }
+        if (teacherRepository.existsByPhone(phone)) {
+            throw new ConflictException("Số điện thoại giáo viên đã tồn tại: " + phone);
+        }
+
         Teacher teacher = mapper.map(req, Teacher.class);
+        teacher.setTeacherCode(code);
+        teacher.setFullName(req.getFullName().trim());
+        teacher.setPhone(phone);
         return mapper.map(teacherRepository.save(teacher), TeacherResponse.class);
     }
 
+    @Transactional
     @Override
     public TeacherResponse update(Long id, TeacherUpsertRequest req) {
         Teacher existing = teacherRepository.findById(id)
                 .orElseThrow(() -> new NotFoundExeception("Teacher not found: " + id));
+
+        if (req.getTeacherCode() == null || req.getTeacherCode().trim().isEmpty()) {
+            throw new com.yo.day1.common.exception.BadRequestException("Mã giáo viên không được để trống");
+        }
+        if (req.getFullName() == null || req.getFullName().trim().isEmpty()) {
+            throw new com.yo.day1.common.exception.BadRequestException("Họ tên giáo viên không được để trống");
+        }
+        if (req.getPhone() == null || req.getPhone().trim().isEmpty()) {
+            throw new com.yo.day1.common.exception.BadRequestException("Số điện thoại giáo viên không được để trống");
+        }
+
+        String code = req.getTeacherCode().trim();
+        String phone = req.getPhone().trim();
+
+        if (existing.getTeacherCode() != null && !existing.getTeacherCode().equalsIgnoreCase(code)
+                && teacherRepository.existsByTeacherCode(code)) {
+            throw new ConflictException("Mã giáo viên đã tồn tại: " + code);
+        }
+        if (existing.getPhone() != null && !existing.getPhone().equalsIgnoreCase(phone)
+                && teacherRepository.existsByPhone(phone)) {
+            throw new ConflictException("Số điện thoại giáo viên đã tồn tại: " + phone);
+        }
+
         mapper.map(req, existing);
+        existing.setTeacherCode(code);
+        existing.setFullName(req.getFullName().trim());
+        existing.setPhone(phone);
         return mapper.map(teacherRepository.save(existing), TeacherResponse.class);
     }
 

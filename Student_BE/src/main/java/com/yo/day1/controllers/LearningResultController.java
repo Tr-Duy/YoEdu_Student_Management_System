@@ -60,14 +60,14 @@ public class LearningResultController {
         return ApiResponse.success(null, "Deleted");
     }
 
-    @PatchMapping("/{id}/lock")
+    @RequestMapping(value = "/{id}/lock", method = {RequestMethod.PATCH, RequestMethod.PUT})
     @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF')")
     public ApiResponse<Void> lock(@PathVariable Long id, Principal principal) {
         learningResultService.lock(id, principal.getName());
         return ApiResponse.success(null, "Locked");
     }
 
-    @PatchMapping("/{id}/unlock")
+    @RequestMapping(value = "/{id}/unlock", method = {RequestMethod.PATCH, RequestMethod.PUT})
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> unlock(@PathVariable Long id, Principal principal) {
         learningResultService.unlock(id, principal.getName());

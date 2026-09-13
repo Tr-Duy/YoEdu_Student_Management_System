@@ -1,6 +1,7 @@
 package com.yo.day1.service.impl;
 
 import com.yo.day1.common.exception.BadRequestException;
+import com.yo.day1.common.exception.ConflictException;
 import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.*;
 import com.yo.day1.domain.enums.DiscountType;
@@ -59,7 +60,7 @@ public class BillingServiceImpl implements BillingService {
         if (code == null || code.trim().isEmpty()) {
             code = generateUniqueInvoiceCode(student, courseClass, billingMonth);
         } else if (tuitionInvoiceRepository.existsByInvoiceCode(code.trim())) {
-            throw new BadRequestException("Mã hóa đơn đã tồn tại: " + code.trim());
+            throw new ConflictException("Mã hóa đơn đã tồn tại: " + code.trim());
         }
 
         TuitionInvoice invoice = buildInvoice(
@@ -126,10 +127,10 @@ public class BillingServiceImpl implements BillingService {
                 .orElseThrow(() -> new NotFoundExeception("Invoice not found: " + request.getInvoiceId()));
 
         if (invoice.getStatus() == InvoiceStatus.PAID) {
-            throw new BadRequestException("Hóa đơn đã được thanh toán đầy đủ");
+            throw new ConflictException("Hóa đơn đã được thanh toán đầy đủ");
         }
         if (request.getPaidAmount().compareTo(invoice.getBalanceAmount()) > 0) {
-            throw new BadRequestException("Số tiền thanh toán (" + request.getPaidAmount()
+            throw new ConflictException("Số tiền thanh toán (" + request.getPaidAmount()
                     + ") vượt quá số dư cần thanh toán (" + invoice.getBalanceAmount() + ")");
         }
 
@@ -276,7 +277,7 @@ public class BillingServiceImpl implements BillingService {
     private void assertInvoiceNotDuplicate(Student student, CourseClass courseClass, LocalDate billingMonth) {
         if (tuitionInvoiceRepository.existsByStudentIdAndCourseClassIdAndBillingMonth(
                 student.getId(), courseClass.getId(), billingMonth)) {
-            throw new BadRequestException(duplicateInvoiceMessage(student, courseClass, billingMonth));
+            throw new ConflictException(duplicateInvoiceMessage(student, courseClass, billingMonth));
         }
     }
 
@@ -312,7 +313,7 @@ public class BillingServiceImpl implements BillingService {
         }
         code = truncateCode(code.trim());
         if (paymentRepository.existsByPaymentCode(code)) {
-            throw new BadRequestException("Mã thanh toán đã tồn tại: " + code);
+            throw new ConflictException("Mã thanh toán đã tồn tại: " + code);
         }
         return code;
     }
@@ -335,23 +336,23 @@ public class BillingServiceImpl implements BillingService {
         return code.substring(0, CODE_MAX_LENGTH);
     }
 
-    private BadRequestException mapInvoiceIntegrityViolation(
+    private RuntimeException mapInvoiceIntegrityViolation(
             DataIntegrityViolationException ex,
             Student student,
             CourseClass courseClass,
             LocalDate billingMonth) {
         if (tuitionInvoiceRepository.existsByStudentIdAndCourseClassIdAndBillingMonth(
                 student.getId(), courseClass.getId(), billingMonth)) {
-            return new BadRequestException(duplicateInvoiceMessage(student, courseClass, billingMonth));
+            return new ConflictException(duplicateInvoiceMessage(student, courseClass, billingMonth));
         }
         String message = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
         if (message != null && message.toLowerCase().contains("invoice_code")) {
-            return new BadRequestException("Mã hóa đơn đã tồn tại. Vui lòng thử lại.");
+            return new ConflictException("Mã hóa đơn đã tồn tại. Vui lòng thử lại.");
         }
         if (message != null && message.toLowerCase().contains("uq_invoice")) {
-            return new BadRequestException(duplicateInvoiceMessage(student, courseClass, billingMonth));
+            return new ConflictException(duplicateInvoiceMessage(student, courseClass, billingMonth));
         }
-        return new BadRequestException("Không thể tạo hóa đơn. Kiểm tra dữ liệu trùng lặp hoặc khóa ngoại.");
+        return new ConflictException("Không thể tạo hóa đơn. Kiểm tra dữ liệu trùng lặp hoặc khóa ngoại.");
     }
 
     private TuitionInvoice buildInvoice(String code, Student student, CourseClass courseClass,
@@ -372,6 +373,17 @@ public class BillingServiceImpl implements BillingService {
         if (promotionId != null) {
             promotion = promotionRepository.findById(promotionId)
                     .orElseThrow(() -> new NotFoundExeception("Promotion not found: " + promotionId));
+            
+            LocalDate today = LocalDate.now();
+            if (promotion.getStartDate() != null && today.isBefore(promotion.getStartDate())) {
+                throw new ConflictException("Chương trình khuyến mãi '" + promotion.getName() + "' chưa bắt đầu áp dụng.");
+            }
+            if (promotion.getEndDate() != null && today.isAfter(promotion.getEndDate())) {
+                throw new ConflictException("Chương trình khuyến mãi '" + promotion.getName() + "' đã hết hạn.");
+            }
+            if (promotion.getIsActive() != null && !promotion.getIsActive()) {
+                throw new ConflictException("Chương trình khuyến mãi '" + promotion.getName() + "' đã ngưng hoạt động.");
+            }
             discountAmount = calculateDiscount(originalAmount, promotion);
         }
 

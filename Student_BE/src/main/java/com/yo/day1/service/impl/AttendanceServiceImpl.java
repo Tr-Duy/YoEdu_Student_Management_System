@@ -1,6 +1,7 @@
 package com.yo.day1.service.impl;
 
 import com.yo.day1.common.exception.BadRequestException;
+import com.yo.day1.common.exception.ConflictException;
 import com.yo.day1.common.exception.NotFoundExeception;
 import com.yo.day1.domain.entity.*;
 import com.yo.day1.domain.enums.AttendanceStatus;
@@ -87,7 +88,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         } catch (DataIntegrityViolationException ex) {
             if (attendanceRepository.existsByCourseClassIdAndStudentIdAndAttendanceDate(
                     request.getCourseClassId(), request.getStudentId(), request.getAttendanceDate())) {
-                throw new BadRequestException(duplicateAttendanceMessage(request));
+                throw new ConflictException(duplicateAttendanceMessage(request));
             }
             throw ex;
         }

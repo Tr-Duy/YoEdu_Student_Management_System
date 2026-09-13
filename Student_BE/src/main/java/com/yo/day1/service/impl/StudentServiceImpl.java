@@ -1,6 +1,9 @@
 package com.yo.day1.service.impl;
 
+import com.yo.day1.common.exception.BadRequestException;
+import com.yo.day1.common.exception.ConflictException;
 import com.yo.day1.common.exception.NotFoundExeception;
+import com.yo.day1.domain.entity.Parent;
 import com.yo.day1.domain.entity.Student;
 import com.yo.day1.domain.entity.StudentStatusHistory;
 import com.yo.day1.domain.enums.StudentStatus;
@@ -9,11 +12,8 @@ import com.yo.day1.dto.student.ChangeStudentStatusRequest;
 import com.yo.day1.dto.student.StudentResponse;
 import com.yo.day1.dto.student.StudentStatusHistoryResponse;
 import com.yo.day1.dto.student.StudentUpsertRequest;
-import com.yo.day1.domain.entity.Parent;
 import com.yo.day1.dto.student.StudentWithParentUpsertRequest;
-import com.yo.day1.repository.ParentRepository;
-import com.yo.day1.repository.StudentRepository;
-import com.yo.day1.repository.StudentStatusHistoryRepository;
+import com.yo.day1.repository.*;
 import com.yo.day1.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -25,144 +25,216 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-@Service                                    // Đánh dấu class này là tầng Service, Spring tự tạo và quản lý bean
-@RequiredArgsConstructor                    // Lombok: tự tạo constructor chứa tất cả field final (thay cho @Autowired)
+@Service
+@RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
 
-    private final StudentRepository studentRepository;                   // Repository thao tác bảng students
-    private final ParentRepository parentRepository;                     // Repository thao tác bảng parents
-    private final StudentStatusHistoryRepository statusHistoryRepository;// Repository thao tác bảng lịch sử trạng thái
-    private final ModelMapper mapper;                                    // Thư viện tự động convert Entity ↔ DTO
+    private final StudentRepository studentRepository;
+    private final ParentRepository parentRepository;
+    private final StudentStatusHistoryRepository statusHistoryRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final AttendanceRepository attendanceRepository;
+    private final LearningResultRepository learningResultRepository;
+    private final TuitionInvoiceRepository tuitionInvoiceRepository;
+    private final ModelMapper mapper;
 
     // ==================== TÌM KIẾM ====================
 
-    @Transactional(readOnly = true)         // Chỉ đọc DB, không ghi → Spring tối ưu hiệu năng
+    @Transactional(readOnly = true)
     @Override
     public Page<StudentResponse> search(String search, StudentStatus status, String gradeLevel, Pageable pageable) {
         return studentRepository.findAll(
-                StudentSpec.filter(search, status, gradeLevel), // Tạo điều kiện WHERE động theo các tham số truyền vào
-                pageable)                                        // Phân trang (page, size, sort)
-                .map(s -> mapper.map(s, StudentResponse.class)); // Convert từng Student Entity → StudentResponse DTO
+                StudentSpec.filter(search, status, gradeLevel),
+                pageable)
+                .map(s -> mapper.map(s, StudentResponse.class));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<StudentResponse> findByAll() {
-        return studentRepository.findAll()                       // Lấy toàn bộ danh sách Student từ DB
-                .stream()                                        // Chuyển List thành Stream để xử lý tuần tự
-                .map(s -> mapper.map(s, StudentResponse.class)) // Convert từng Student Entity → StudentResponse DTO
-                .toList();                                       // Gom kết quả lại thành List
+        return studentRepository.findAll()
+                .stream()
+                .map(s -> mapper.map(s, StudentResponse.class))
+                .toList();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<StudentResponse> findById(long id) {
-        return studentRepository.findById(id)                   // Tìm Student theo id, trả về Optional (tránh NullPointerException)
-                .map(s -> mapper.map(s, StudentResponse.class)); // Nếu tìm thấy → convert sang DTO, không thấy → trả Optional.empty()
+        return studentRepository.findById(id)
+                .map(s -> mapper.map(s, StudentResponse.class));
     }
 
     // ==================== TẠO MỚI ====================
 
+    @Transactional
     @Override
     public StudentResponse create(StudentUpsertRequest req) {
-        Student stu = mapper.map(req, Student.class);            // Convert DTO request → Student Entity
-        parentRepository.findById(req.getParentId())            // Tìm Parent theo id trong request
-                .ifPresent(stu::setParent);                      // Nếu tìm thấy Parent → gắn vào Student, không thấy → bỏ qua
-        return mapper.map(studentRepository.save(stu), StudentResponse.class); // Lưu Student vào DB → convert kết quả sang DTO trả về
+        if (req.getStudentCode() == null || req.getStudentCode().trim().isEmpty()) {
+            throw new BadRequestException("Mã học sinh không được để trống");
+        }
+        if (req.getFullName() == null || req.getFullName().trim().isEmpty()) {
+            throw new BadRequestException("Họ tên học sinh không được để trống");
+        }
+        if (req.getParentId() == null) {
+            throw new BadRequestException("Phụ huynh không được để trống");
+        }
+        Parent parent = parentRepository.findById(req.getParentId())
+                .orElseThrow(() -> new NotFoundExeception("Phụ huynh không tồn tại: " + req.getParentId()));
+
+        if (studentRepository.existsByStudentCode(req.getStudentCode().trim())) {
+            throw new ConflictException("Mã học sinh đã tồn tại: " + req.getStudentCode().trim());
+        }
+
+        Student stu = mapper.map(req, Student.class);
+        stu.setStudentCode(req.getStudentCode().trim());
+        stu.setFullName(req.getFullName().trim());
+        stu.setParent(parent);
+        return mapper.map(studentRepository.save(stu), StudentResponse.class);
     }
 
     // ==================== CẬP NHẬT ====================
 
+    @Transactional
     @Override
     public StudentResponse update(Long id, StudentUpsertRequest req) {
-        Student stu = studentRepository.findById(id)            // Tìm Student theo id
-                .orElseThrow(() -> new RuntimeException("Student not found: " + id)); // Không tìm thấy → ném exception
-        mapper.map(req, stu);                                    // Ghi đè các field từ request vào Student đang có (không tạo object mới)
-        parentRepository.findById(req.getParentId())            // Tìm Parent mới theo id trong request
-                .ifPresent(stu::setParent);                      // Nếu tìm thấy → cập nhật Parent cho Student
-        return mapper.map(studentRepository.save(stu), StudentResponse.class); // Lưu Student đã cập nhật → trả về DTO
+        Student stu = studentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundExeception("Student not found: " + id));
+
+        if (req.getStudentCode() == null || req.getStudentCode().trim().isEmpty()) {
+            throw new BadRequestException("Mã học sinh không được để trống");
+        }
+        if (req.getFullName() == null || req.getFullName().trim().isEmpty()) {
+            throw new BadRequestException("Họ tên học sinh không được để trống");
+        }
+
+        if (stu.getStudentCode() != null && !stu.getStudentCode().equalsIgnoreCase(req.getStudentCode().trim())
+                && studentRepository.existsByStudentCode(req.getStudentCode().trim())) {
+            throw new ConflictException("Mã học sinh đã tồn tại: " + req.getStudentCode().trim());
+        }
+
+        if (req.getParentId() != null) {
+            Parent parent = parentRepository.findById(req.getParentId())
+                    .orElseThrow(() -> new NotFoundExeception("Phụ huynh không tồn tại: " + req.getParentId()));
+            stu.setParent(parent);
+        }
+
+        mapper.map(req, stu);
+        stu.setStudentCode(req.getStudentCode().trim());
+        stu.setFullName(req.getFullName().trim());
+        return mapper.map(studentRepository.save(stu), StudentResponse.class);
     }
 
     // ==================== TẠO MỚI KÈM PHỤ HUYNH ====================
 
-    @Transactional                          // Nếu lỗi giữa chừng → rollback cả Parent lẫn Student, không lưu dở dang
+    @Transactional
     @Override
     public StudentResponse createWithParent(StudentWithParentUpsertRequest req) {
-        Parent parent = new Parent();                            // Tạo object Parent mới
-        parent.setFullName(req.getParentFullName());             // Set họ tên phụ huynh
-        parent.setEmail(req.getParentEmail() != null
-                && !req.getParentEmail().isBlank()
-                ? req.getParentEmail() : null);                  // Nếu email không rỗng → lưu email, ngược lại → lưu null
-        parent.setPhone(req.getParentPhone());                   // Set số điện thoại phụ huynh
-        parent.setAddress(req.getParentAddress());               // Set địa chỉ phụ huynh
-        parent.setGender(req.getParentGender());                 // Set giới tính phụ huynh
-        parent.setRelationship(req.getParentRelationship());     // Set mối quan hệ với học sinh (cha/mẹ/ông/bà...)
-        parent = parentRepository.save(parent);                  // Lưu Parent vào DB trước, lấy lại object có id
+        if (req.getStudentCode() == null || req.getStudentCode().trim().isEmpty()) {
+            throw new BadRequestException("Mã học sinh không được để trống");
+        }
+        if (req.getFullName() == null || req.getFullName().trim().isEmpty()) {
+            throw new BadRequestException("Họ tên học sinh không được để trống");
+        }
+        if (req.getParentFullName() == null || req.getParentFullName().trim().isEmpty()) {
+            throw new BadRequestException("Họ tên phụ huynh không được để trống");
+        }
 
-        Student stu = new Student();                             // Tạo object Student mới
-        stu.setStudentCode(req.getStudentCode());                // Set mã học sinh
-        stu.setFullName(req.getFullName());                      // Set họ tên học sinh
-        stu.setDateOfBirth(req.getDateOfBirth());                // Set ngày sinh
-        stu.setGender(req.getGender());                          // Set giới tính học sinh
-        stu.setGradeLevel(req.getGradeLevel());                  // Set khối lớp
-        stu.setSchoolName(req.getSchoolName());                  // Set tên trường
-        stu.setPhone(req.getPhone());                            // Set số điện thoại học sinh
-        stu.setDescription(req.getDescription());                // Set mô tả
-        stu.setStatus(req.getStatus());                          // Set trạng thái học sinh
-        stu.setLatestScore(req.getLatestScore());                // Set điểm gần nhất
-        stu.setNote(req.getStudentNote());                       // Set ghi chú
-        stu.setParent(parent);                                   // Gắn Parent vừa tạo vào Student
+        if (studentRepository.existsByStudentCode(req.getStudentCode().trim())) {
+            throw new ConflictException("Mã học sinh đã tồn tại: " + req.getStudentCode().trim());
+        }
 
-        return mapper.map(studentRepository.save(stu), StudentResponse.class); // Lưu Student → trả về DTO
+        Parent parent = new Parent();
+        parent.setFullName(req.getParentFullName().trim());
+        parent.setEmail(req.getParentEmail() != null && !req.getParentEmail().isBlank()
+                ? req.getParentEmail().trim() : null);
+        parent.setPhone(req.getParentPhone() != null ? req.getParentPhone().trim() : null);
+        parent.setAddress(req.getParentAddress());
+        parent.setGender(req.getParentGender());
+        parent.setRelationship(req.getParentRelationship());
+        parent = parentRepository.save(parent);
+
+        Student stu = new Student();
+        stu.setStudentCode(req.getStudentCode().trim());
+        stu.setFullName(req.getFullName().trim());
+        stu.setDateOfBirth(req.getDateOfBirth());
+        stu.setGender(req.getGender());
+        stu.setGradeLevel(req.getGradeLevel());
+        stu.setSchoolName(req.getSchoolName());
+        stu.setPhone(req.getPhone());
+        stu.setDescription(req.getDescription());
+        stu.setStatus(req.getStatus());
+        stu.setLatestScore(req.getLatestScore());
+        stu.setNote(req.getStudentNote());
+        stu.setParent(parent);
+
+        return mapper.map(studentRepository.save(stu), StudentResponse.class);
     }
 
     // ==================== CẬP NHẬT KÈM PHỤ HUYNH ====================
 
-    @Transactional                          // Rollback toàn bộ nếu có lỗi
+    @Transactional
     @Override
     public StudentResponse updateWithParent(Long id, StudentWithParentUpsertRequest req) {
-        Student stu = studentRepository.findById(id)            // Tìm Student theo id
-                .orElseThrow(() -> new NotFoundExeception("Student not found: " + id)); // Không tìm thấy → ném exception tùy chỉnh
+        Student stu = studentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundExeception("Student not found: " + id));
 
-        Parent parent = stu.getParent();                        // Lấy Parent hiện tại của Student
-        if (parent == null) {                                   // Nếu Student chưa có Parent
-            parent = new Parent();                              // → Tạo Parent mới
+        if (req.getStudentCode() == null || req.getStudentCode().trim().isEmpty()) {
+            throw new BadRequestException("Mã học sinh không được để trống");
         }
-        parent.setFullName(req.getParentFullName());            // Cập nhật họ tên phụ huynh
-        parent.setEmail(req.getParentEmail() != null
-                && !req.getParentEmail().isBlank()
-                ? req.getParentEmail() : null);                 // Cập nhật email, rỗng thì lưu null
-        parent.setPhone(req.getParentPhone());                  // Cập nhật số điện thoại
-        parent.setAddress(req.getParentAddress());              // Cập nhật địa chỉ
-        parent.setGender(req.getParentGender());                // Cập nhật giới tính
-        parent.setRelationship(req.getParentRelationship());    // Cập nhật mối quan hệ
-        parent = parentRepository.save(parent);                 // Lưu Parent đã cập nhật vào DB
+        if (req.getFullName() == null || req.getFullName().trim().isEmpty()) {
+            throw new BadRequestException("Họ tên học sinh không được để trống");
+        }
 
-        stu.setStudentCode(req.getStudentCode());               // Cập nhật mã học sinh
-        stu.setFullName(req.getFullName());                     // Cập nhật họ tên
-        stu.setDateOfBirth(req.getDateOfBirth());               // Cập nhật ngày sinh
-        stu.setGender(req.getGender());                         // Cập nhật giới tính
-        stu.setGradeLevel(req.getGradeLevel());                 // Cập nhật khối lớp
-        stu.setSchoolName(req.getSchoolName());                 // Cập nhật tên trường
-        stu.setPhone(req.getPhone());                           // Cập nhật số điện thoại
-        stu.setDescription(req.getDescription());               // Cập nhật mô tả
-        stu.setStatus(req.getStatus());                         // Cập nhật trạng thái
-        stu.setLatestScore(req.getLatestScore());               // Cập nhật điểm gần nhất
-        stu.setNote(req.getStudentNote());                      // Cập nhật ghi chú
-        stu.setParent(parent);                                  // Gắn Parent đã cập nhật vào Student
+        if (stu.getStudentCode() != null && !stu.getStudentCode().equalsIgnoreCase(req.getStudentCode().trim())
+                && studentRepository.existsByStudentCode(req.getStudentCode().trim())) {
+            throw new ConflictException("Mã học sinh đã tồn tại: " + req.getStudentCode().trim());
+        }
 
-        return mapper.map(studentRepository.save(stu), StudentResponse.class); // Lưu Student → trả về DTO
+        Parent parent = stu.getParent();
+        if (parent == null) {
+            parent = new Parent();
+        }
+        if (req.getParentFullName() != null && !req.getParentFullName().trim().isEmpty()) {
+            parent.setFullName(req.getParentFullName().trim());
+        }
+        parent.setEmail(req.getParentEmail() != null && !req.getParentEmail().isBlank()
+                ? req.getParentEmail().trim() : null);
+        parent.setPhone(req.getParentPhone() != null ? req.getParentPhone().trim() : null);
+        parent.setAddress(req.getParentAddress());
+        parent.setGender(req.getParentGender());
+        parent.setRelationship(req.getParentRelationship());
+        parent = parentRepository.save(parent);
+
+        stu.setStudentCode(req.getStudentCode().trim());
+        stu.setFullName(req.getFullName().trim());
+        stu.setDateOfBirth(req.getDateOfBirth());
+        stu.setGender(req.getGender());
+        stu.setGradeLevel(req.getGradeLevel());
+        stu.setSchoolName(req.getSchoolName());
+        stu.setPhone(req.getPhone());
+        stu.setDescription(req.getDescription());
+        stu.setStatus(req.getStatus());
+        stu.setLatestScore(req.getLatestScore());
+        stu.setNote(req.getStudentNote());
+        stu.setParent(parent);
+
+        return mapper.map(studentRepository.save(stu), StudentResponse.class);
     }
 
     // ==================== TÌM KIẾM NÂNG CAO ====================
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<StudentResponse> findByStudentCode(String studentCode) {
-        return studentRepository.findByStudentCode(studentCode) // Tìm Student theo mã học sinh (VD: HS001)
-                .map(s -> mapper.map(s, StudentResponse.class)); // Nếu thấy → convert sang DTO
+        return studentRepository.findByStudentCode(studentCode)
+                .map(s -> mapper.map(s, StudentResponse.class));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<StudentResponse> findByStatus(StudentStatus status) {
-        return studentRepository.findByStatus(status)           // Lọc danh sách Student theo trạng thái
+        return studentRepository.findByStatus(status)
                 .stream()
                 .map(s -> mapper.map(s, StudentResponse.class))
                 .toList();
@@ -170,13 +242,25 @@ public class StudentServiceImpl implements StudentService {
 
     // ==================== XÓA ====================
 
+    @Transactional
     @Override
     public void deleteById(Long id) {
-        if (studentRepository.existsById(id)) {                 // Kiểm tra id có tồn tại trong DB không
-            studentRepository.deleteById(id);                   // Tồn tại → xóa
-        } else {
-            throw new NotFoundExeception("not found id: " + id);// Không tồn tại → ném exception, không xóa ngầm
+        if (!studentRepository.existsById(id)) {
+            throw new NotFoundExeception("Student not found: " + id);
         }
+        if (enrollmentRepository != null && !enrollmentRepository.findByStudentId(id).isEmpty()) {
+            throw new ConflictException("Không thể xóa học viên đã có lịch sử ghi danh lớp học.");
+        }
+        if (attendanceRepository != null && attendanceRepository.existsByStudentId(id)) {
+            throw new ConflictException("Không thể xóa học viên đã có lịch sử điểm danh.");
+        }
+        if (learningResultRepository != null && !learningResultRepository.findByStudentId(id).isEmpty()) {
+            throw new ConflictException("Không thể xóa học viên đã có bảng điểm học tập.");
+        }
+        if (tuitionInvoiceRepository != null && !tuitionInvoiceRepository.findByStudentId(id).isEmpty()) {
+            throw new ConflictException("Không thể xóa học viên đã có hóa đơn học phí.");
+        }
+        studentRepository.deleteById(id);
     }
 
     @Override
