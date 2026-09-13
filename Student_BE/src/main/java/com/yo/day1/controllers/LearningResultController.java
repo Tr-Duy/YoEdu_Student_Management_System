@@ -43,11 +43,8 @@ public class LearningResultController {
 
     @GetMapping("/class/{classId}")
     @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_STAFF')")
-    public ApiResponse<List<LearningResultResponse>> findByClassAndMonth(
-            @PathVariable Long classId,
-            @RequestParam int year,
-            @RequestParam int month) {
-        return ApiResponse.success(learningResultService.findByClassAndMonth(classId, year, month));
+    public ApiResponse<List<LearningResultResponse>> findByClassId(@PathVariable Long classId) {
+        return ApiResponse.success(learningResultService.findByClassId(classId));
     }
 
     @PostMapping("/search")

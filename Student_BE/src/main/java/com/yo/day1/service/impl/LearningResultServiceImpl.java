@@ -3,18 +3,21 @@ package com.yo.day1.service.impl;
 import com.yo.day1.common.exception.BadRequestException;
 import com.yo.day1.common.exception.ConflictException;
 import com.yo.day1.common.exception.NotFoundExeception;
+import com.yo.day1.domain.entity.CourseClass;
 import com.yo.day1.domain.entity.LearningResult;
+import com.yo.day1.domain.entity.Student;
 import com.yo.day1.domain.entity.Users;
+import com.yo.day1.domain.enums.EnrollmentStatus;
 import com.yo.day1.domain.enums.GradeClassification;
 import com.yo.day1.domain.enums.GradeStatus;
+import com.yo.day1.domain.enums.UserRole;
 import com.yo.day1.dto.learning.LearningResultCreateRequest;
 import com.yo.day1.dto.learning.LearningResultResponse;
-import com.yo.day1.dto.learning.LearningResultUpdateRequest;
 import com.yo.day1.dto.learning.LearningResultSearchRequest;
-import com.yo.day1.repository.LearningResultRepository;
-import com.yo.day1.repository.EnrollmentRepository;
+import com.yo.day1.dto.learning.LearningResultUpdateRequest;
 import com.yo.day1.repository.AttendanceRepository;
-import com.yo.day1.domain.entity.CourseClass;
+import com.yo.day1.repository.EnrollmentRepository;
+import com.yo.day1.repository.LearningResultRepository;
 import com.yo.day1.service.AuthService;
 import com.yo.day1.service.CourseClassService;
 import com.yo.day1.service.LearningResultService;
@@ -25,6 +28,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,50 +47,56 @@ public class LearningResultServiceImpl implements LearningResultService {
     @Transactional
     @Override
     public LearningResultResponse create(LearningResultCreateRequest request, String username) {
-        if (learningResultRepository.existsByStudentIdAndCourseClassIdAndResultMonth(
-                request.getStudentId(), request.getCourseClassId(), request.getResultMonth())) {
-            throw new ConflictException("Learning result already exists for this student, class, and month");
+        // 1. Kiểm tra duplicate học viên + lớp
+        if (learningResultRepository.existsByStudentIdAndCourseClassId(
+                request.getStudentId(), request.getCourseClassId())) {
+            throw new ConflictException("Học viên này đã có bảng điểm trong lớp.");
         }
-        
+
+        // 2. Kiểm tra tồn tại CourseClass và Student
         CourseClass courseClass = courseClassService.getCourseClass(request.getCourseClassId());
-        
-        // 9. STUDENT MUST BE ENROLLED
+        Student student = studentService.getStudent(request.getStudentId());
+
+        // 3. Học viên bắt buộc phải enrolled trong lớp
         boolean isEnrolled = enrollmentRepository.existsByStudentIdAndCourseClassIdAndStatus(
-                request.getStudentId(), request.getCourseClassId(), com.yo.day1.domain.enums.EnrollmentStatus.ACTIVE);
+                request.getStudentId(), request.getCourseClassId(), EnrollmentStatus.ACTIVE);
         if (!isEnrolled) {
-            throw new BadRequestException("Student is not actively enrolled in this class");
+            throw new BadRequestException("Học viên chưa đăng ký lớp học này");
         }
 
         Users user = authService.findActiveUserByUsername(username);
-        
-        // 12. TEACHER AUTHORIZATION
-        if (user.getRole() == com.yo.day1.domain.enums.UserRole.ACADEMIC_STAFF) {
-            if (user.getTeacher() == null) {
-                // If it's just academic staff without a teacher profile, they might have global access, 
-                // but let's assume they must be the teacher if we enforce it. 
-                // Actually, ACADEMIC_STAFF might be able to edit any class.
-            } else {
-                if (!courseClass.getMainTeacher().getId().equals(user.getTeacher().getId()) && 
-                    (courseClass.getAssistantTeacher() == null || !courseClass.getAssistantTeacher().getId().equals(user.getTeacher().getId()))) {
-                    throw new com.yo.day1.common.exception.BadRequestException("Teacher is not assigned to this class");
-                }
+
+        // 4. Kiểm tra phân quyền giáo viên
+        if (user.getRole() == UserRole.ACADEMIC_STAFF && user.getTeacher() != null) {
+            Long teacherId = user.getTeacher().getId();
+            boolean isMainTeacher = courseClass.getMainTeacher() != null && courseClass.getMainTeacher().getId().equals(teacherId);
+            boolean isAssistant = courseClass.getAssistantTeacher() != null && courseClass.getAssistantTeacher().getId().equals(teacherId);
+            if (!isMainTeacher && !isAssistant) {
+                throw new BadRequestException("Teacher is not assigned to this class");
             }
         }
 
+        // 5. Tính toán tổng điểm và xếp loại
+        Integer totalScore = calculateTotalScore(request.getProcessScore(), request.getMidtermScore(), request.getFinalScore());
+        GradeClassification classification = calculateClassification(totalScore);
+
         LearningResult item = new LearningResult();
-        item.setStudent(studentService.getStudent(request.getStudentId()));
+        item.setStudent(student);
         item.setCourseClass(courseClass);
-        item.setResultMonth(request.getResultMonth());
-        item.setScore(request.getScore());
-        item.setTeacherComment(request.getTeacherComment());
-        item.setClassification(calculateClassification(request.getScore()));
+        item.setProcessScore(request.getProcessScore());
+        item.setMidtermScore(request.getMidtermScore());
+        item.setFinalScore(request.getFinalScore());
+        item.setTotalScore(totalScore);
+        item.setClassification(classification);
         item.setStatus(GradeStatus.DRAFT);
+        item.setTeacherComment(request.getTeacherComment());
         item.setCreatedByUser(user);
+
         try {
             return toResponse(learningResultRepository.saveAndFlush(item));
         } catch (DataIntegrityViolationException ex) {
             if (isDuplicateLearningResult(ex)) {
-                throw new ConflictException("Learning result already exists for this student, class, and month");
+                throw new ConflictException("Học viên này đã có bảng điểm trong lớp.");
             }
             throw ex;
         }
@@ -96,38 +107,45 @@ public class LearningResultServiceImpl implements LearningResultService {
     public LearningResultResponse update(Long id, LearningResultUpdateRequest request, String username) {
         LearningResult item = learningResultRepository.findById(id)
                 .orElseThrow(() -> new NotFoundExeception("Learning result not found: " + id));
-                
-        Users user = authService.findActiveUserByUsername(username);
-        
-        // 18. UPDATE GRADE - Check status
-        if (item.getStatus() == GradeStatus.LOCKED && user.getRole() != com.yo.day1.domain.enums.UserRole.ADMIN) {
-            throw new com.yo.day1.common.exception.BadRequestException("Cannot update a LOCKED learning result");
+
+        // 1. Kiểm tra trạng thái LOCKED: Không cho sửa, trả về 409 Conflict
+        if (item.getStatus() == GradeStatus.LOCKED) {
+            throw new ConflictException("Điểm đã khóa và không thể chỉnh sửa.");
         }
-        
-        // 12. TEACHER AUTHORIZATION
-        if (user.getRole() == com.yo.day1.domain.enums.UserRole.ACADEMIC_STAFF) {
-            if (user.getTeacher() != null) {
-                CourseClass courseClass = item.getCourseClass();
-                if (!courseClass.getMainTeacher().getId().equals(user.getTeacher().getId()) && 
-                    (courseClass.getAssistantTeacher() == null || !courseClass.getAssistantTeacher().getId().equals(user.getTeacher().getId()))) {
-                    throw new com.yo.day1.common.exception.BadRequestException("Teacher is not assigned to this class");
-                }
+
+        Users user = authService.findActiveUserByUsername(username);
+
+        // 2. Phân quyền giáo viên
+        if (user.getRole() == UserRole.ACADEMIC_STAFF && user.getTeacher() != null) {
+            CourseClass courseClass = item.getCourseClass();
+            Long teacherId = user.getTeacher().getId();
+            boolean isMainTeacher = courseClass.getMainTeacher() != null && courseClass.getMainTeacher().getId().equals(teacherId);
+            boolean isAssistant = courseClass.getAssistantTeacher() != null && courseClass.getAssistantTeacher().getId().equals(teacherId);
+            if (!isMainTeacher && !isAssistant) {
+                throw new BadRequestException("Teacher is not assigned to this class");
             }
         }
-        
-        if (request.getScore() != null) {
-            item.setScore(request.getScore());
-            item.setClassification(calculateClassification(request.getScore()));
+
+        // 3. Cập nhật các điểm thành phần
+        item.setProcessScore(request.getProcessScore());
+        item.setMidtermScore(request.getMidtermScore());
+        item.setFinalScore(request.getFinalScore());
+        if (request.getTeacherComment() != null) {
+            item.setTeacherComment(request.getTeacherComment());
         }
-        if (request.getTeacherComment() != null) item.setTeacherComment(request.getTeacherComment());
-        item.setCreatedByUser(user);
+
+        // 4. Tính toán lại tổng điểm và xếp loại
+        Integer totalScore = calculateTotalScore(item.getProcessScore(), item.getMidtermScore(), item.getFinalScore());
+        item.setTotalScore(totalScore);
+        item.setClassification(calculateClassification(totalScore));
+
         return toResponse(learningResultRepository.save(item));
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<LearningResultResponse> findByClassAndMonth(Long courseClassId, int year, int month) {
-        return learningResultRepository.findByClassAndMonth(courseClassId, year, month)
+    public List<LearningResultResponse> findByClassId(Long courseClassId) {
+        return learningResultRepository.findByCourseClassId(courseClassId)
                 .stream().map(this::toResponse).toList();
     }
 
@@ -135,7 +153,7 @@ public class LearningResultServiceImpl implements LearningResultService {
     @Override
     public List<LearningResultResponse> findByStudentId(Long studentId, String username) throws BadRequestException, NotFoundExeception {
         Users user = authService.findActiveUserByUsername(username);
-        if (user.getRole().name().equals("PARENT")) {
+        if (user.getRole() == UserRole.PARENT && user.getParent() != null) {
             studentService.getStudentForParent(studentId, user.getParent().getId());
         }
         return learningResultRepository.findByStudentId(studentId).stream().map(this::toResponse).toList();
@@ -146,33 +164,20 @@ public class LearningResultServiceImpl implements LearningResultService {
     public List<LearningResultResponse> search(LearningResultSearchRequest request, String username) {
         Users user = authService.findActiveUserByUsername(username);
         Long searchTeacherId = request.getTeacherId();
-        
-        // 12. TEACHER AUTHORIZATION - if user is teacher, they can only search their own classes
-        if (user.getRole() == com.yo.day1.domain.enums.UserRole.ACADEMIC_STAFF) {
-            if (user.getTeacher() != null) {
-                searchTeacherId = user.getTeacher().getId();
-            }
+
+        if (user.getRole() == UserRole.ACADEMIC_STAFF && user.getTeacher() != null) {
+            searchTeacherId = user.getTeacher().getId();
         }
-        
-        Integer year = null;
-        Integer month = null;
-        if (request.getMonth() != null && request.getMonth().matches("\\d{4}-\\d{2}")) {
-            String[] parts = request.getMonth().split("-");
-            year = Integer.parseInt(parts[0]);
-            month = Integer.parseInt(parts[1]);
-        }
-        
+
         List<LearningResult> results = learningResultRepository.searchLearningResults(
                 request.getStudentName(),
                 request.getCourseClassId(),
                 request.getCourseId(),
                 searchTeacherId,
-                year,
-                month,
                 request.getClassification(),
                 request.getStatus()
         );
-        
+
         return results.stream().map(this::toResponse).toList();
     }
 
@@ -181,20 +186,23 @@ public class LearningResultServiceImpl implements LearningResultService {
     public void delete(Long id, String username) {
         LearningResult item = learningResultRepository.findById(id)
                 .orElseThrow(() -> new NotFoundExeception("Learning result not found: " + id));
-        Users user = authService.findActiveUserByUsername(username);
-        
+
+        // Kiểm tra LOCKED: Không cho xóa, trả 409 Conflict
         if (item.getStatus() == GradeStatus.LOCKED) {
-            throw new com.yo.day1.common.exception.BadRequestException("Cannot delete a LOCKED learning result");
+            throw new ConflictException("Điểm đã khóa và không thể xóa.");
         }
-        
-        if (user.getRole() == com.yo.day1.domain.enums.UserRole.ACADEMIC_STAFF && user.getTeacher() != null) {
+
+        Users user = authService.findActiveUserByUsername(username);
+        if (user.getRole() == UserRole.ACADEMIC_STAFF && user.getTeacher() != null) {
             CourseClass courseClass = item.getCourseClass();
-            if (!courseClass.getMainTeacher().getId().equals(user.getTeacher().getId()) && 
-                (courseClass.getAssistantTeacher() == null || !courseClass.getAssistantTeacher().getId().equals(user.getTeacher().getId()))) {
-                throw new com.yo.day1.common.exception.BadRequestException("Teacher is not assigned to this class");
+            Long teacherId = user.getTeacher().getId();
+            boolean isMainTeacher = courseClass.getMainTeacher() != null && courseClass.getMainTeacher().getId().equals(teacherId);
+            boolean isAssistant = courseClass.getAssistantTeacher() != null && courseClass.getAssistantTeacher().getId().equals(teacherId);
+            if (!isMainTeacher && !isAssistant) {
+                throw new BadRequestException("Teacher is not assigned to this class");
             }
         }
-        
+
         learningResultRepository.delete(item);
     }
 
@@ -204,15 +212,17 @@ public class LearningResultServiceImpl implements LearningResultService {
         LearningResult item = learningResultRepository.findById(id)
                 .orElseThrow(() -> new NotFoundExeception("Learning result not found: " + id));
         Users user = authService.findActiveUserByUsername(username);
-        
-        if (user.getRole() == com.yo.day1.domain.enums.UserRole.ACADEMIC_STAFF && user.getTeacher() != null) {
+
+        if (user.getRole() == UserRole.ACADEMIC_STAFF && user.getTeacher() != null) {
             CourseClass courseClass = item.getCourseClass();
-            if (!courseClass.getMainTeacher().getId().equals(user.getTeacher().getId()) && 
-                (courseClass.getAssistantTeacher() == null || !courseClass.getAssistantTeacher().getId().equals(user.getTeacher().getId()))) {
-                throw new com.yo.day1.common.exception.BadRequestException("Teacher is not assigned to this class");
+            Long teacherId = user.getTeacher().getId();
+            boolean isMainTeacher = courseClass.getMainTeacher() != null && courseClass.getMainTeacher().getId().equals(teacherId);
+            boolean isAssistant = courseClass.getAssistantTeacher() != null && courseClass.getAssistantTeacher().getId().equals(teacherId);
+            if (!isMainTeacher && !isAssistant) {
+                throw new BadRequestException("Teacher is not assigned to this class");
             }
         }
-        
+
         item.setStatus(GradeStatus.LOCKED);
         learningResultRepository.save(item);
     }
@@ -223,34 +233,95 @@ public class LearningResultServiceImpl implements LearningResultService {
         LearningResult item = learningResultRepository.findById(id)
                 .orElseThrow(() -> new NotFoundExeception("Learning result not found: " + id));
         Users user = authService.findActiveUserByUsername(username);
-        
-        if (user.getRole() != com.yo.day1.domain.enums.UserRole.ADMIN) {
-            throw new com.yo.day1.common.exception.BadRequestException("Only ADMIN can unlock learning results");
+
+        if (user.getRole() != UserRole.ADMIN) {
+            throw new BadRequestException("Chỉ ADMIN mới có quyền mở khóa bảng điểm");
         }
-        
+
         item.setStatus(GradeStatus.DRAFT);
         learningResultRepository.save(item);
     }
 
+    /**
+     * Thuật toán tính tổng điểm duy nhất:
+     * - TH1: Chỉ có midterm và final (process is null) -> (midterm + final) / 2
+     * - TH2: Có đủ cả process, midterm, final -> process * 0.10 + midterm * 0.30 + final * 0.60
+     * - TH3: Thiếu midterm hoặc final hoặc chỉ có process -> NULL
+     * - Làm tròn số nguyên: phần thập phân < 0.5 làm tròn xuống, >= 0.5 làm tròn lên (HALF_UP)
+     */
+    public static Integer calculateTotalScore(BigDecimal process, BigDecimal midterm, BigDecimal finalExam) {
+        if (midterm == null || finalExam == null) {
+            return null; // Không tự coi điểm thiếu là 0
+        }
+
+        BigDecimal raw;
+        if (process == null) {
+            // TH1: Chỉ có midterm + final
+            raw = midterm.add(finalExam).divide(BigDecimal.valueOf(2), 4, RoundingMode.HALF_UP);
+        } else {
+            // TH2: Có đủ cả 3 thành phần
+            BigDecimal partProcess = process.multiply(BigDecimal.valueOf(0.10));
+            BigDecimal partMidterm = midterm.multiply(BigDecimal.valueOf(0.30));
+            BigDecimal partFinal = finalExam.multiply(BigDecimal.valueOf(0.60));
+            raw = partProcess.add(partMidterm).add(partFinal);
+        }
+
+        int rounded = raw.setScale(0, RoundingMode.HALF_UP).intValue();
+        return Math.max(0, Math.min(10, rounded));
+    }
+
+    /**
+     * Thuật toán xếp loại duy nhất dựa trên total_score đã làm tròn:
+     * - total <= 5: YẾU
+     * - total > 5 && total < 7 (= 6): TRUNG BÌNH
+     * - total >= 7 && total < 8 (= 7): KHÁ
+     * - total >= 8 && total <= 10 (= 8, 9, 10): GIỎI
+     */
+    public static GradeClassification calculateClassification(Integer totalScore) {
+        if (totalScore == null) {
+            return null;
+        }
+        if (totalScore <= 5) {
+            return GradeClassification.YEU;
+        } else if (totalScore < 7) {
+            return GradeClassification.TRUNG_BINH;
+        } else if (totalScore < 8) {
+            return GradeClassification.KHA;
+        } else {
+            return GradeClassification.GIOI;
+        }
+    }
+
     private LearningResultResponse toResponse(LearningResult item) {
-        LearningResultResponse response = mapper.map(item, LearningResultResponse.class);
+        LearningResultResponse response = new LearningResultResponse();
+        response.setId(item.getId());
         response.setStudentId(item.getStudent().getId());
         response.setStudentName(item.getStudent().getFullName());
+        response.setStudentCode(item.getStudent().getStudentCode());
         response.setCourseClassId(item.getCourseClass().getId());
+        response.setCourseClassName(item.getCourseClass().getName());
         response.setClassName(item.getCourseClass().getName());
-        response.setCreatedByUserId(item.getCreatedByUser().getId());
-        response.setCreatedByUsername(item.getCreatedByUser().getUsername());
+
+        response.setProcessScore(item.getProcessScore());
+        response.setMidtermScore(item.getMidtermScore());
+        response.setFinalScore(item.getFinalScore());
+        response.setTotalScore(item.getTotalScore());
         response.setClassification(item.getClassification());
         response.setStatus(item.getStatus());
-        
-        // 7. ATTENDANCE RATE PHẢI THEO THÁNG
-        Double rate = attendanceRepository.calculateAttendanceRate(
-                item.getStudent().getId(), 
-                item.getCourseClass().getId(), 
-                item.getResultMonth().getYear(), 
-                item.getResultMonth().getMonthValue());
+        response.setTeacherComment(item.getTeacherComment());
+
+        if (item.getCreatedByUser() != null) {
+            response.setCreatedByUserId(item.getCreatedByUser().getId());
+            response.setCreatedByUsername(item.getCreatedByUser().getUsername());
+        }
+        response.setCreatedAt(item.getCreatedAt());
+        response.setUpdatedAt(item.getUpdatedAt());
+
+        Double rate = attendanceRepository.calculateOverallAttendanceRate(
+                item.getStudent().getId(),
+                item.getCourseClass().getId());
         response.setAttendanceRate(rate);
-        
+
         return response;
     }
 
@@ -258,15 +329,5 @@ public class LearningResultServiceImpl implements LearningResultService {
         Throwable cause = ex.getMostSpecificCause();
         String message = cause != null ? cause.getMessage() : ex.getMessage();
         return message != null && message.toLowerCase(Locale.ROOT).contains("uq_learning_result");
-    }
-
-    private GradeClassification calculateClassification(java.math.BigDecimal score) {
-        if (score == null) return null;
-        double s = score.doubleValue();
-        if (s >= 9.0) return GradeClassification.XUAT_SAC;
-        if (s >= 8.0) return GradeClassification.GIOI;
-        if (s >= 6.5) return GradeClassification.KHA;
-        if (s >= 5.0) return GradeClassification.TRUNG_BINH;
-        return GradeClassification.YEU;
     }
 }

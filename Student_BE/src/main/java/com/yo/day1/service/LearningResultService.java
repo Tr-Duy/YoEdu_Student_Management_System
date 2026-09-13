@@ -13,7 +13,7 @@ public interface LearningResultService {
     LearningResultResponse create(LearningResultCreateRequest request, String username);
     LearningResultResponse update(Long id, LearningResultUpdateRequest request, String username);
     List<LearningResultResponse> findByStudentId(Long studentId, String username) throws BadRequestException, NotFoundExeception;
-    List<LearningResultResponse> findByClassAndMonth(Long courseClassId, int year, int month);
+    List<LearningResultResponse> findByClassId(Long courseClassId);
     List<LearningResultResponse> search(LearningResultSearchRequest request, String username);
     void delete(Long id, String username);
     void lock(Long id, String username);

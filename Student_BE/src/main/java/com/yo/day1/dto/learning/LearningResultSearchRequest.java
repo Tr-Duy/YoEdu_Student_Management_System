@@ -10,7 +10,6 @@ public class LearningResultSearchRequest {
     private Long courseClassId;
     private Long courseId;
     private Long teacherId;
-    private String month; // format: YYYY-MM
     private GradeClassification classification;
     private GradeStatus status;
 }

@@ -8,13 +8,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "learning_results", uniqueConstraints = @UniqueConstraint(name = "uq_learning_result", columnNames = {
-        "student_id", "course_class_id", "result_month" }))
+        "student_id", "course_class_id" }))
 public class LearningResult extends AuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,11 +24,17 @@ public class LearningResult extends AuditableEntity {
     @JoinColumn(name = "course_class_id", nullable = false)
     private CourseClass courseClass;
 
-    @Column(name = "result_month", nullable = false)
-    private LocalDate resultMonth;
+    @Column(name = "process_score", precision = 4, scale = 2)
+    private BigDecimal processScore;
 
-    @Column(precision = 5, scale = 2)
-    private BigDecimal score;
+    @Column(name = "midterm_score", precision = 4, scale = 2)
+    private BigDecimal midtermScore;
+
+    @Column(name = "final_score", precision = 4, scale = 2)
+    private BigDecimal finalScore;
+
+    @Column(name = "total_score")
+    private Integer totalScore;
 
     @Column(name = "teacher_comment", columnDefinition = "TEXT")
     private String teacherComment;
@@ -44,5 +49,5 @@ public class LearningResult extends AuditableEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
-    private GradeStatus status = GradeStatus.LOCKED;
+    private GradeStatus status = GradeStatus.DRAFT;
 }

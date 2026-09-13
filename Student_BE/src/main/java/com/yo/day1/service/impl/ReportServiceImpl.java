@@ -82,7 +82,7 @@ public class ReportServiceImpl implements ReportService {
     @Transactional(readOnly = true)
     @Override
     public List<LearningResultSummaryDto> learningResultSummary(int year, int month, Long classId) {
-        return learningResultRepository.learningResultSummary(year, month, classId).stream().map(r ->
+        return learningResultRepository.learningResultSummary(classId).stream().map(r ->
                 new LearningResultSummaryDto(
                         ((Number) r[0]).longValue(), (String) r[1],
                         year, month,

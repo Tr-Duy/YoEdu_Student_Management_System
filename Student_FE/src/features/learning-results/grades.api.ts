@@ -2,16 +2,24 @@ import { api } from '../../lib/api';
 
 export interface Grade {
   id: number;
+  studentId: number;
   studentName: string;
+  studentCode: string;
+  courseClassId: number;
+  courseClassName?: string;
   className: string;
-  resultMonth: string;
-  score: number;
-  classification: string;
-  status: string;
-  attendanceRate: number;
-  studentId?: number;
-  courseClassId?: number;
-  teacherComment?: string;
+  processScore?: number | null;
+  midtermScore?: number | null;
+  finalScore?: number | null;
+  totalScore?: number | null;
+  classification?: 'GIOI' | 'KHA' | 'TRUNG_BINH' | 'YEU' | null;
+  status: 'DRAFT' | 'LOCKED';
+  attendanceRate?: number | null;
+  teacherComment?: string | null;
+  createdByUserId?: number;
+  createdByUsername?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface GradeSearchParams {
@@ -19,7 +27,6 @@ export interface GradeSearchParams {
   courseClassId?: number;
   courseId?: number;
   teacherId?: number;
-  month?: string;
   classification?: string;
   status?: string;
 }
@@ -27,13 +34,16 @@ export interface GradeSearchParams {
 export interface GradeCreateData {
   studentId: number;
   courseClassId: number;
-  resultMonth: string;
-  score: number;
+  processScore?: number | null;
+  midtermScore?: number | null;
+  finalScore?: number | null;
   teacherComment?: string;
 }
 
 export interface GradeUpdateData {
-  score?: number;
+  processScore?: number | null;
+  midtermScore?: number | null;
+  finalScore?: number | null;
   teacherComment?: string;
 }
 

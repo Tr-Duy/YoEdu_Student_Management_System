@@ -74,4 +74,13 @@ public interface AttendanceRepository extends JpaRepository<Attendence, Long> {
                                    @Param("classId") Long classId,
                                    @Param("year") int year,
                                    @Param("month") int month);
+
+    @Query("""
+            SELECT SUM(CASE WHEN a.status = 'PRESENT' OR a.status = 'LATE' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(a), 0)
+            FROM Attendence a
+            WHERE a.student.id = :studentId
+              AND a.courseClass.id = :classId
+            """)
+    Double calculateOverallAttendanceRate(@Param("studentId") Long studentId,
+                                          @Param("classId") Long classId);
 }

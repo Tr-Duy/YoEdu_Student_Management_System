@@ -469,21 +469,29 @@ export interface ScheduleSlotUpsertRequest {
 export interface LearningResultResponse extends Auditable {
   studentId: number;
   studentName: string;
+  studentCode: string;
   courseClassId: number;
+  courseClassName: string;
   className: string;
-  resultMonth: string; // YYYY-MM-DD
-  score: number;
-  teacherComment: string;
-  createdByUserId: number;
-  createdByUsername: string;
+  processScore?: number | null;
+  midtermScore?: number | null;
+  finalScore?: number | null;
+  totalScore?: number | null;
+  classification?: 'GIOI' | 'KHA' | 'TRUNG_BINH' | 'YEU' | null;
+  status: 'DRAFT' | 'LOCKED';
+  teacherComment?: string | null;
+  attendanceRate?: number | null;
+  createdByUserId?: number;
+  createdByUsername?: string;
 }
 
 export interface LearningResultCreateRequest {
   studentId: number;
   courseClassId: number;
-  resultMonth: string; // YYYY-MM-DD
-  score: number;
-  teacherComment: string;
+  processScore?: number | null;
+  midtermScore?: number | null;
+  finalScore?: number | null;
+  teacherComment?: string | null;
 }
 
 // ==========================================

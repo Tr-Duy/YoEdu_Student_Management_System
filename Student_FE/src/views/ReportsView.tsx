@@ -249,33 +249,33 @@ export const ReportsView: React.FC = () => {
          <div className="space-y-6">
             <div className="bg-surface border border-border rounded-xl overflow-hidden">
                <div className="px-6 py-4 border-b border-border bg-surface-hover/30">
-                  <h4 className="font-semibold text-foreground text-sm flex items-center gap-2"><GraduationCap size={16} className="text-violet-500"/> Xếp loại học lực (Tháng {filterMonth}/{filterYear})</h4>
+                  <h4 className="font-semibold text-foreground text-sm flex items-center gap-2"><GraduationCap size={16} className="text-violet-500"/> Xếp loại học lực theo lớp</h4>
                </div>
                <Table>
                   <TableHeader>
                      <TableRow>
                         <TableHead>Lớp</TableHead>
-                        <TableHead className="text-center">Đầu điểm</TableHead>
-                        <TableHead className="text-center">Điểm TB</TableHead>
+                        <TableHead className="text-center">Số bảng điểm</TableHead>
+                        <TableHead className="text-center">Tổng điểm TB</TableHead>
                         <TableHead className="text-center text-violet-500">Min - Max</TableHead>
-                        <TableHead className="text-center text-emerald-600 dark:text-emerald-400">Xuất Sắc</TableHead>
                         <TableHead className="text-center text-blue-500">Giỏi</TableHead>
                         <TableHead className="text-center text-amber-500">Khá</TableHead>
-                        <TableHead className="text-center text-red-500">TB/Yếu</TableHead>
+                        <TableHead className="text-center text-orange-500">Trung bình</TableHead>
+                        <TableHead className="text-center text-red-500">Yếu</TableHead>
                      </TableRow>
                   </TableHeader>
                   <TableBody>
                      {isLearningLoading ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-foreground-muted">Đang tải...</TableCell></TableRow>
-                     : !learningSummaryData?.length ? <TableRow><TableCell colSpan={8} className="py-8"><EmptyState title="Không có dữ liệu" description="Chưa có điểm tháng này" /></TableCell></TableRow>
+                     : !learningSummaryData?.length ? <TableRow><TableCell colSpan={8} className="py-8"><EmptyState title="Không có dữ liệu" description="Chưa có dữ liệu bảng điểm" /></TableCell></TableRow>
                      : learningSummaryData.map((row: any, i: number) => (
                         <TableRow key={i}>
                            <TableCell className="font-medium text-foreground">{row.className}</TableCell>
                            <TableCell className="text-center text-foreground-muted">{row.totalStudents}</TableCell>
                            <TableCell className="text-center font-bold text-violet-600 dark:text-violet-400">{(row.averageScore || 0).toFixed(1)}</TableCell>
-                           <TableCell className="text-center text-foreground-secondary">{(row.minScore || 0).toFixed(1)} - {(row.maxScore || 0).toFixed(1)}</TableCell>
-                           <TableCell className="text-center text-emerald-600 dark:text-emerald-400 font-semibold">{row.excellentCount}</TableCell>
-                           <TableCell className="text-center text-blue-600 dark:text-blue-400 font-semibold">{row.goodCount}</TableCell>
-                           <TableCell className="text-center text-amber-600 dark:text-amber-400 font-semibold">{row.averageCount}</TableCell>
+                           <TableCell className="text-center text-foreground-secondary">{(row.minScore || 0).toFixed(0)} - {(row.maxScore || 0).toFixed(0)}</TableCell>
+                           <TableCell className="text-center text-blue-600 dark:text-blue-400 font-semibold">{row.excellentCount}</TableCell>
+                           <TableCell className="text-center text-amber-600 dark:text-amber-400 font-semibold">{row.goodCount}</TableCell>
+                           <TableCell className="text-center text-orange-600 dark:text-orange-400 font-semibold">{row.averageCount}</TableCell>
                            <TableCell className="text-center text-red-500 font-semibold">{row.weakCount}</TableCell>
                         </TableRow>
                      ))}
